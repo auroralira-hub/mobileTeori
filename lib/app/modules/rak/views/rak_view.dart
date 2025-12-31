@@ -310,9 +310,6 @@ class _RakViewState extends State<RakView> {
             case 2:
               break;
             case 3:
-              Get.offAllNamed('/notifikasi');
-              break;
-            case 4:
               Get.offAllNamed('/lainnya');
               break;
           }
@@ -321,10 +318,6 @@ class _RakViewState extends State<RakView> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Stok'),
           BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifikasi',
-          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.more_horiz),
             label: 'Lainnya',
@@ -396,7 +389,7 @@ class _RakTab extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 10,
               offset: const Offset(0, 6),
             ),
@@ -439,7 +432,7 @@ class _LockerDetail extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.12),
+                    color: Colors.green.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.location_on, color: Colors.green),

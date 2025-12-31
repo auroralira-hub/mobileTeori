@@ -24,8 +24,8 @@ class SupplierListView extends GetView<SupplierController> {
       floatingActionButton: FloatingActionButton(
         onPressed: controller.addSupplier,
         backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
         tooltip: 'Tambah Supplier',
+        child: const Icon(Icons.add),
       ),
     );
   }

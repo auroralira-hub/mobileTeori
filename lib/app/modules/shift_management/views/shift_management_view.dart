@@ -40,7 +40,7 @@ class ShiftCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: getStatusColor().withOpacity(0.1),
+      color: getStatusColor().withValues(alpha: 0.1),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(

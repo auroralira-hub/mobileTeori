@@ -42,8 +42,8 @@ class PatientListView extends GetView<PatientController> {
       floatingActionButton: FloatingActionButton(
         onPressed: controller.addPatient,
         backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
         tooltip: 'Tambah Pasien',
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -66,8 +66,8 @@ class PatientCard extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                child: Text(patient.name[0]),
                 backgroundColor: Colors.green[100],
+                child: Text(patient.name[0]),
               ),
               const SizedBox(width: 16),
               Expanded(

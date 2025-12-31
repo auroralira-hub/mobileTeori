@@ -2,38 +2,52 @@ part of 'app_pages.dart';
 
 abstract class Routes {
   Routes._();
-  static const LOGIN = _Paths.LOGIN;
-  static const HOME = _Paths.HOME;
-  static const STOK = _Paths.STOK;
-  static const RAK = _Paths.RAK;
-  static const NOTIFIKASI = _Paths.NOTIFIKASI;
-  static const LAINNYA = _Paths.LAINNYA;
-  static const ADD_EDIT_MEDICINE = _Paths.ADD_EDIT_MEDICINE;
-  static const DAILY_REPORT = _Paths.DAILY_REPORT;
-  static const SHIFT_MANAGEMENT = _Paths.SHIFT_MANAGEMENT;
-  static const STOCK_CHECK = _Paths.STOCK_CHECK;
-  static const PATIENT = _Paths.PATIENT;
-  static const PATIENT_DETAIL = _Paths.PATIENT_DETAIL;
-  static const PURCHASE_ORDER = _Paths.PURCHASE_ORDER;
-  static const ANALYTICS = _Paths.ANALYTICS;
-  static const SUPPLIER = _Paths.SUPPLIER;
+
+  static const login = _Paths.login;
+  static const home = _Paths.home;
+  static const stok = _Paths.stok;
+  static const rak = _Paths.rak;
+  static const notifikasi = _Paths.notifikasi;
+  static const lainnya = _Paths.lainnya;
+  static const addEditMedicine = _Paths.addEditMedicine;
+  static const dailyReport = _Paths.dailyReport;
+  static const shiftManagement = _Paths.shiftManagement;
+  static const stockCheck = _Paths.stockCheck;
+  static const patient = _Paths.patient;
+  static const patientDetail = _Paths.patientDetail;
+  static const purchaseOrder = _Paths.purchaseOrder;
+  static const analytics = _Paths.analytics;
+  static const supplier = _Paths.supplier;
+  static const register = _Paths.register;
+  static const landing = _Paths.landing;
+  static const scanBarcode = _Paths.scanBarcode;
+  static const kasir = _Paths.kasir;
+  static const posHistory = _Paths.posHistory;
+  static const antrian = _Paths.antrian;
 }
 
 abstract class _Paths {
   _Paths._();
-  static const LOGIN = '/login';
-  static const HOME = '/home';
-  static const STOK = '/stok';
-  static const RAK = '/rak';
-  static const NOTIFIKASI = '/notifikasi';
-  static const LAINNYA = '/lainnya';
-  static const ADD_EDIT_MEDICINE = '/add-edit-medicine';
-  static const DAILY_REPORT = '/daily-report';
-  static const SHIFT_MANAGEMENT = '/shift-management';
-  static const STOCK_CHECK = '/stock-check';
-  static const PATIENT = '/patient';
-  static const PATIENT_DETAIL = '/patient-detail';
-  static const PURCHASE_ORDER = '/purchase-order';
-  static const ANALYTICS = '/analytics';
-  static const SUPPLIER = '/supplier';
+
+  static const login = '/login';
+  static const home = '/home';
+  static const stok = '/stok';
+  static const rak = '/rak';
+  static const notifikasi = '/notifikasi';
+  static const lainnya = '/lainnya';
+  static const addEditMedicine = '/add-edit-medicine';
+  static const dailyReport = '/daily-report';
+  static const shiftManagement = '/shift-management';
+  static const stockCheck = '/stock-check';
+  static const patient = '/patient';
+  static const patientDetail = '/patient-detail';
+  static const purchaseOrder = '/purchase-order';
+  static const analytics = '/analytics';
+  static const supplier = '/supplier';
+  static const register = '/register';
+  static const landing = '/landing';
+  static const scanBarcode = '/scan-barcode';
+  static const kasir = '/kasir';
+  static const posHistory = '/pos-history';
+  static const antrian = '/antrian';
 }

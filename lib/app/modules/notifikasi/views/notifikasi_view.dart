@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../routes/app_pages.dart';
 import '../controllers/notifikasi_controller.dart';
 
 class NotifikasiView extends GetView<NotifikasiController> {
   const NotifikasiView({super.key});
+
   @override
   Widget build(BuildContext context) {
     final kadaluarsaItems = [
@@ -36,127 +38,126 @@ class NotifikasiView extends GetView<NotifikasiController> {
         'days': 28,
       },
     ];
+
     final menipisItems = [
       {
         'name': 'OBH Combi Syrup',
         'stock': 25,
         'min': 30,
-        'location': 'Rak C – Loker 08',
+        'location': 'Rak C - Loker 08',
       },
       {
         'name': 'Vitamin C 500 mg',
         'stock': 45,
         'min': 80,
-        'location': 'Rak A – Loker 12',
+        'location': 'Rak A - Loker 12',
       },
       {
         'name': 'Salbutamol Inhaler',
         'stock': 12,
         'min': 20,
-        'location': 'Rak B – Loker 05',
+        'location': 'Rak B - Loker 05',
       },
       {
         'name': 'Betadine Solution',
         'stock': 30,
         'min': 50,
-        'location': 'Rak D – Loker 09',
+        'location': 'Rak D - Loker 09',
       },
       {
         'name': 'Alcohol 70%',
         'stock': 55,
         'min': 100,
-        'location': 'Rak D – Loker 10',
+        'location': 'Rak D - Loker 10',
       },
     ];
 
+    final content = Obx(() {
+      final isKadaluarsa = controller.tabIndex.value == 1;
+      return Column(
+        children: [
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: isKadaluarsa
+                ? _KadaluarsaSection(items: kadaluarsaItems)
+                : _MenipisSection(items: menipisItems),
+          ),
+          const SizedBox(height: 24),
+        ],
+      );
+    });
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xfff6f7fb),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _Header(onBack: () => Get.back()),
-              Container(
-                width: double.infinity,
-                color: Colors.grey[100],
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Column(
+        child: Column(
+          children: [
+            _Header(
+              onBack: () => Get.back(),
+              filterTabs: Obx(
+                () => Row(
                   children: [
-                    Obx(
-                      () => Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _TabButton(
-                            label: 'Kadaluarsa',
-                            icon: Icons.calendar_month,
-                            selected:
-                                controller.tabIndex.value == 1 ||
-                                controller.tabIndex.value == 0,
-                            onTap: () => controller.setTab(1),
-                          ),
-                          const SizedBox(width: 12),
-                          _TabButton(
-                            label: 'Stok Menipis',
-                            icon: Icons.inventory_2,
-                            selected: controller.tabIndex.value == 2,
-                            onTap: () => controller.setTab(2),
-                          ),
-                        ],
+                    Expanded(
+                      child: _TabButton(
+                        label: 'Kadaluarsa',
+                        icon: Icons.calendar_month,
+                        selected: controller.tabIndex.value == 1,
+                        onTap: () => controller.setTab(1),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _TabButton(
+                        label: 'Stok Menipis',
+                        icon: Icons.inventory_2,
+                        selected: controller.tabIndex.value == 2,
+                        onTap: () => controller.setTab(2),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-              Obx(() {
-                final isKadaluarsa =
-                    controller.tabIndex.value == 1 ||
-                    controller.tabIndex.value == 0;
-                if (isKadaluarsa) {
-                  return _KadaluarsaSection(items: kadaluarsaItems);
-                }
-                return _MenipisSection(items: menipisItems);
-              }),
-              const SizedBox(height: 16),
-            ],
-          ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: content,
+              ),
+            ),
+          ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xff00a86b),
+        onPressed: () => Get.toNamed(Routes.scanBarcode),
+        child: const Icon(Icons.qr_code_scanner, size: 26),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.green,
+        selectedItemColor: const Color(0xff06b47c),
         unselectedItemColor: Colors.grey,
-        currentIndex: 3,
+        currentIndex: 0,
         onTap: (index) {
           switch (index) {
             case 0:
-              Get.offAllNamed('/home');
+              Get.offAllNamed(Routes.home);
               break;
             case 1:
-              Get.offAllNamed('/stok');
+              Get.offAllNamed(Routes.stok);
               break;
             case 2:
-              Get.offAllNamed('/rak');
+              Get.offAllNamed(Routes.rak);
               break;
-            case 3:
-              break;
-            case 4:
-              Get.offAllNamed('/lainnya');
-              break;
+            default:
+              Get.offAllNamed(Routes.lainnya);
           }
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Stok'),
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'Stok'),
           BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifikasi',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            label: 'Lainnya',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'Lainnya'),
         ],
       ),
     );
@@ -165,11 +166,13 @@ class NotifikasiView extends GetView<NotifikasiController> {
 
 class _Header extends StatelessWidget {
   final VoidCallback onBack;
-  const _Header({required this.onBack});
+  final Widget filterTabs;
+  const _Header({required this.onBack, required this.filterTabs});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.green.shade600, Colors.green.shade500],
@@ -177,40 +180,54 @@ class _Header extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: onBack,
-            child: const Padding(
-              padding: EdgeInsets.all(6),
-              child: Icon(Icons.arrow_back, color: Colors.white),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: onBack,
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              ),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
+              label: const Text('Kembali'),
             ),
           ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Notifikasi',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Pantau obat yang perlu perhatian',
-                  style: TextStyle(color: Colors.white70),
+          const SizedBox(height: 4),
+          const Text(
+            'Notifikasi',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Pantau obat yang perlu perhatian',
+            style: TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
                 ),
               ],
             ),
+            child: filterTabs,
           ),
         ],
       ),
@@ -233,25 +250,19 @@ class _TabButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? Colors.green : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 10,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          color: selected ? const Color(0xff00a86b) : const Color(0xfff3f6fb),
+          borderRadius: BorderRadius.circular(18),
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: selected ? Colors.white : Colors.grey[700]),
-            const SizedBox(width: 6),
+            const SizedBox(height: 6),
             Text(
               label,
               style: TextStyle(
@@ -343,32 +354,50 @@ class _SummaryBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: color,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.white),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(subtitle, style: const TextStyle(color: Colors.white70)),
-                ],
-              ),
+    return Container(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(14),
             ),
-          ],
-        ),
+            child: Icon(icon, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -394,14 +423,13 @@ class _ExpiredCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Card(
         elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Column(
@@ -417,11 +445,11 @@ class _ExpiredCard extends StatelessWidget {
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
+                      horizontal: 12,
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.12),
+                      color: Colors.red.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -434,15 +462,15 @@ class _ExpiredCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                children: const [
                   Text(
                     'Tanggal Kadaluarsa',
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: Colors.red),
                   ),
-                  Text('Sisa Stok', style: const TextStyle(color: Colors.grey)),
+                  Text('Sisa Stok', style: TextStyle(color: Colors.grey)),
                 ],
               ),
               Row(
@@ -487,14 +515,14 @@ class _LowStockCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Card(
         elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -523,17 +551,18 @@ class _LowStockCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text('Lokasi: $location'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: const Color(0xff00a86b),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   onPressed: () {},
                   icon: const Icon(Icons.shopping_cart_checkout),

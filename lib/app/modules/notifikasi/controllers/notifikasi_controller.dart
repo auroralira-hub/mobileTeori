@@ -18,7 +18,7 @@ class NotificationModel {
 }
 
 class NotifikasiController extends GetxController {
-  final tabIndex = 0.obs; // 0: Semua, 1: Kadaluarsa, 2: Stok Menipis
+  final tabIndex = 1.obs; // 1: Kadaluarsa, 2: Stok Menipis
   final notifications = <NotificationModel>[].obs;
 
   @override

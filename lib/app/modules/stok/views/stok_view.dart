@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../routes/app_pages.dart';
 import '../controllers/stok_controller.dart';
 
 class StokView extends GetView<StokController> {
   const StokView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.toNamed('/add-edit-medicine'),
+        onPressed: () => Get.toNamed(Routes.addEditMedicine),
         backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
         tooltip: 'Tambah Obat',
+        child: const Icon(Icons.add),
       ),
       body: SafeArea(
         child: Column(
@@ -23,13 +25,18 @@ class StokView extends GetView<StokController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Daftar Stok Obat', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  const Text(
+                    'Daftar Stok Obat',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
                   const SizedBox(height: 8),
                   TextField(
                     decoration: InputDecoration(
                       hintText: 'Cari nama, kode, kategori, atau manufacturer',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -51,7 +58,7 @@ class StokView extends GetView<StokController> {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
+                children: const [
                   _MedicineCard(
                     name: 'Paracetamol 500 mg',
                     form: 'Tablet',
@@ -111,19 +118,16 @@ class StokView extends GetView<StokController> {
         onTap: (index) {
           switch (index) {
             case 0:
-              Get.offAllNamed('/home');
+              Get.offAllNamed(Routes.home);
               break;
             case 1:
               // Sudah di Stok
               break;
             case 2:
-              Get.offAllNamed('/rak');
+              Get.offAllNamed(Routes.rak);
               break;
             case 3:
-              Get.offAllNamed('/notifikasi');
-              break;
-            case 4:
-              Get.offAllNamed('/lainnya');
+              Get.offAllNamed(Routes.lainnya);
               break;
           }
         },
@@ -131,8 +135,10 @@ class StokView extends GetView<StokController> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Stok'),
           BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notifikasi'),
-          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'Lainnya'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.more_horiz),
+            label: 'Lainnya',
+          ),
         ],
       ),
     );
@@ -143,6 +149,7 @@ class _FilterChip extends StatelessWidget {
   final String label;
   final bool selected;
   const _FilterChip({required this.label, this.selected = false});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -156,11 +163,20 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-
 class _MedicineCard extends StatelessWidget {
   final String name, form, code, expiry, location, stockStatus;
   final int stock;
-  const _MedicineCard({required this.name, required this.form, required this.code, required this.stock, required this.stockStatus, required this.expiry, required this.location});
+
+  const _MedicineCard({
+    required this.name,
+    required this.form,
+    required this.code,
+    required this.stock,
+    required this.stockStatus,
+    required this.expiry,
+    required this.location,
+  });
+
   Color getStatusColor() {
     switch (stockStatus) {
       case 'safe':
@@ -173,6 +189,7 @@ class _MedicineCard extends StatelessWidget {
         return Colors.grey;
     }
   }
+
   String getStatusLabel() {
     switch (stockStatus) {
       case 'safe':
@@ -185,6 +202,7 @@ class _MedicineCard extends StatelessWidget {
         return '-';
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -199,8 +217,17 @@ class _MedicineCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text(form, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    form,
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -216,12 +243,16 @@ class _MedicineCard extends StatelessWidget {
                 Text('Kode: $code', style: const TextStyle(fontSize: 12)),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: getStatusColor().withOpacity(0.15),
+                    color: getStatusColor().withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(getStatusLabel(), style: TextStyle(color: getStatusColor(), fontSize: 12)),
+                  child: Text(
+                    getStatusLabel(),
+                    style: TextStyle(color: getStatusColor(), fontSize: 12),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Text('Stok: $stock', style: const TextStyle(fontSize: 12)),
@@ -242,7 +273,20 @@ class _MedicineCard extends StatelessWidget {
           ],
         ),
         onTap: () {
-          // TODO: Navigasi ke Medicine Detail
+          // Sementara arahkan ke halaman Add/Edit Medicine sambil kirim data
+          // Kalau nanti sudah ada halaman detail khusus, tinggal ganti routenya.
+          Get.toNamed(
+            Routes.addEditMedicine,
+            arguments: {
+              'name': name,
+              'form': form,
+              'code': code,
+              'stock': stock,
+              'stockStatus': stockStatus,
+              'expiry': expiry,
+              'location': location,
+            },
+          );
         },
       ),
     );

@@ -150,7 +150,7 @@ class PurchaseOrderView extends GetView<PurchaseOrderController> {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
-        currentIndex: 4,
+        currentIndex: 3,
         onTap: (index) {
           switch (index) {
             case 0:
@@ -163,9 +163,6 @@ class PurchaseOrderView extends GetView<PurchaseOrderController> {
               Get.offAllNamed('/rak');
               break;
             case 3:
-              Get.offAllNamed('/notifikasi');
-              break;
-            case 4:
               // Sudah di Lainnya
               break;
           }
@@ -174,10 +171,6 @@ class PurchaseOrderView extends GetView<PurchaseOrderController> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Stok'),
           BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifikasi',
-          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.more_horiz),
             label: 'Lainnya',
@@ -209,7 +202,7 @@ class _TabPO extends StatelessWidget {
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: Colors.green.withOpacity(0.25),
+                    color: Colors.green.withValues(alpha: 0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -315,7 +308,7 @@ class _POCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(

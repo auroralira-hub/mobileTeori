@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../../../routes/app_pages.dart';
 import '../controllers/analytics_controller.dart';
 
 class AnalyticsView extends GetView<AnalyticsController> {
@@ -7,345 +9,186 @@ class AnalyticsView extends GetView<AnalyticsController> {
 
   @override
   Widget build(BuildContext context) {
+    const accent = Color(0xff06b47c);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xfff6f7fb),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+        child: Obx(() {
+          final data = controller.currentData;
+          return SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.green[400],
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(24),
-                      bottomRight: Radius.circular(24),
-                    ),
+                _Header(accent: accent, onBack: Get.back),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Row(
+                    children: controller.periods.map((p) {
+                      final selected = controller.selectedPeriod.value == p;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: ChoiceChip(
+                          label: Text(p),
+                          selected: selected,
+                          onSelected: (_) => controller.selectedPeriod.value = p,
+                          selectedColor: accent,
+                          backgroundColor: Colors.white,
+                          labelStyle: TextStyle(
+                            color: selected ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          side: const BorderSide(color: Color(0xffe1e7ef)),
+                        ),
+                      );
+                    }).toList(),
                   ),
+                ),
+                const SizedBox(height: 14),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Row(
                     children: [
-                      InkWell(
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: () => Get.back(),
-                        child: const Padding(
-                          padding: EdgeInsets.all(4),
-                          child: Icon(Icons.arrow_back, color: Colors.white),
+                      Expanded(
+                        child: _BigStatCard(
+                          title: 'Obat Masuk',
+                          value: data.masukValue,
+                          change: data.masukChange,
+                          color: const Color(0xff05b77a),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Laporan & Analitik',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            Text(
-                              'Dashboard insight apotek',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
+                        child: _BigStatCard(
+                          title: 'Obat Keluar',
+                          value: data.keluarValue,
+                          change: data.keluarChange,
+                          color: const Color(0xff2a7ae4),
                         ),
                       ),
-                      Icon(Icons.download, color: Colors.white),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Tab Filter
+                const SizedBox(height: 14),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Obx(
-                    () => Wrap(
-                      spacing: 12,
-                      runSpacing: 8,
-                      children: controller.periods
-                          .map(
-                            (label) => _TabButton(
-                              label: label,
-                              selected:
-                                  controller.selectedPeriod.value == label,
-                              onTap: () =>
-                                  controller.selectedPeriod.value = label,
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: _MovementCard(points: data.movement),
                 ),
-                const SizedBox(height: 16),
-                Obx(() {
-                  final data = controller.currentData;
-                  return Column(
+                const SizedBox(height: 14),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: _TopProductsCard(period: controller.selectedPeriod.value, products: data.topProducts),
+                ),
+                const SizedBox(height: 14),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Row(
                     children: [
-                      // Statistik Obat Masuk/Keluar
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _StatCard(
-                                title: 'Obat Masuk',
-                                value: data.masukValue,
-                                percent: data.masukChange,
-                                color: Colors.green,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _StatCard(
-                                title: 'Obat Keluar',
-                                value: data.keluarValue,
-                                percent: data.keluarChange,
-                                color: Colors.blue,
-                              ),
-                            ),
-                          ],
+                      Expanded(
+                        child: _InfoCard(
+                          icon: Icons.event_busy_outlined,
+                          iconColor: const Color(0xffe67d00),
+                          title: 'Kadaluarsa ${controller.selectedPeriod.value.contains('Bulan') ? 'Bulan Ini' : controller.selectedPeriod.value}',
+                          subtitle: data.expiredCount,
+                          note: 'Perlu perhatian',
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      // Grafik Pergerakan Stok
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      'Pergerakan Stok',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.calendar_today,
-                                      color: Colors.grey[400],
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  controller.selectedPeriod.value ==
-                                          'Minggu Ini'
-                                      ? '6 hari terakhir'
-                                      : controller.selectedPeriod.value ==
-                                            'Tahun Ini'
-                                      ? '6 periode (2 bulanan)'
-                                      : '6 bulan terakhir',
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                                const SizedBox(height: 12),
-                                ...data.movement.map(
-                                  (e) => _StockBar(
-                                    month: e.label,
-                                    masuk: e.masuk,
-                                    keluar: e.keluar,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      width: 16,
-                                      height: 8,
-                                      color: Colors.green,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Text('Masuk'),
-                                    const SizedBox(width: 16),
-                                    Container(
-                                      width: 16,
-                                      height: 8,
-                                      color: Colors.blue,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Text('Keluar'),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Top 5 Obat Paling Sering Keluar
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Card(
-                          color: Colors.green[50],
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Top 5 Obat Paling Sering Keluar',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  controller.selectedPeriod.value,
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                                const SizedBox(height: 12),
-                                ...data.topProducts.asMap().entries.map((
-                                  entry,
-                                ) {
-                                  final idx = entry.key + 1;
-                                  final item = entry.value;
-                                  return _TopObatItem(
-                                    rank: idx,
-                                    name: item.name,
-                                    sold: item.sold,
-                                    percent: item.percentText,
-                                    color: item.isPositive
-                                        ? Colors.green
-                                        : Colors.red,
-                                  );
-                                }),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Info Singkat
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Card(
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    children: [
-                                      const Icon(
-                                        Icons.calendar_today,
-                                        color: Colors.red,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Kadaluarsa ${controller.selectedPeriod.value}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Text(data.expiredCount),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Card(
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    children: [
-                                      const Icon(
-                                        Icons.medication,
-                                        color: Colors.purple,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      const Text(
-                                        'Obat Paling Diresepkan',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Text(data.topPrescription),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _InfoCard(
+                          icon: Icons.medical_services_outlined,
+                          iconColor: const Color(0xff9c27b0),
+                          title: 'Paling Diresepkan',
+                          subtitle: data.topPrescription,
+                          note: '850+ resep',
                         ),
                       ),
                     ],
-                  );
-                }),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: _InsightCard(
+                    text:
+                        'Penjualan minggu ini meningkat 15% dibanding minggu lalu. Stok Paracetamol perlu direstock segera.',
+                  ),
+                ),
               ],
             ),
-          ),
-        ),
+          );
+        }),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.green,
+        currentIndex: 3,
+        selectedItemColor: accent,
         unselectedItemColor: Colors.grey,
-        currentIndex: 4,
         onTap: (index) {
           switch (index) {
             case 0:
-              Get.offAllNamed('/home');
+              Get.offAllNamed(Routes.home);
               break;
             case 1:
-              Get.offAllNamed('/stok');
+              Get.offAllNamed(Routes.stok);
               break;
             case 2:
-              Get.offAllNamed('/rak');
+              Get.offAllNamed(Routes.rak);
               break;
-            case 3:
-              Get.offAllNamed('/notifikasi');
-              break;
-            case 4:
-              // Sudah di Lainnya
-              break;
+            default:
+              Get.offAllNamed(Routes.lainnya);
           }
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Stok'),
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'Stok'),
           BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifikasi',
+          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'Lainnya'),
+        ],
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  final Color accent;
+  final VoidCallback onBack;
+  const _Header({required this.accent, required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xff06b47c), Color(0xff02a867)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(26),
+          bottomRight: Radius.circular(26),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: onBack,
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            label: 'Lainnya',
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text('Laporan & Analitik', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
+              SizedBox(height: 2),
+              Text('Dashboard insight apotek', style: TextStyle(color: Colors.white70)),
+            ],
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.download, color: Colors.white),
           ),
         ],
       ),
@@ -353,131 +196,151 @@ class AnalyticsView extends GetView<AnalyticsController> {
   }
 }
 
-class _TabButton extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  const _TabButton({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-  @override
-  Widget build(BuildContext context) {
-    final bgColor = selected ? Colors.green : Colors.grey[200];
-    final textColor = selected ? Colors.white : Colors.black87;
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-        child: Text(
-          label,
-          style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final String title, value, percent;
+class _BigStatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final String change;
   final Color color;
-  const _StatCard({
+
+  const _BigStatCard({
     required this.title,
     required this.value,
-    required this.percent,
+    required this.change,
     required this.color,
   });
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: color,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.25),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.show_chart, color: Colors.white.withValues(alpha: 0.8)),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
               ),
-            ),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-            Text(
-              percent,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
-            ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18),
+          ),
+          const SizedBox(height: 6),
+          Text(change, style: const TextStyle(color: Colors.white70)),
+        ],
       ),
     );
   }
 }
 
-class _StockBar extends StatelessWidget {
-  final String month;
-  final int masuk, keluar;
-  const _StockBar({
-    required this.month,
-    required this.masuk,
-    required this.keluar,
-  });
+class _MovementCard extends StatelessWidget {
+  final List<MovementPoint> points;
+  const _MovementCard({required this.points});
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(width: 40, child: Text(month)),
-          Expanded(
-            child: Container(
-              height: 16,
-              decoration: BoxDecoration(
-                color: Colors.green[300],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              width: masuk / 20,
-              child: Center(
-                child: Text(
-                  masuk.toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
-              ),
-            ),
+    const masukColor = Color(0xff06b47c);
+    const keluarColor = Color(0xff2a7ae4);
+
+    int maxVal = 1;
+    for (final p in points) {
+      maxVal = [maxVal, p.masuk, p.keluar].reduce((a, b) => a > b ? a : b);
+    }
+    double ratio(int val) => (val / maxVal).clamp(0.1, 1.0).toDouble();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Container(
-              height: 16,
-              decoration: BoxDecoration(
-                color: Colors.blue[300],
-                borderRadius: BorderRadius.circular(8),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text('Pergerakan Stok', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+              Icon(Icons.calendar_today_outlined, color: Colors.black45, size: 18),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text('7 hari terakhir', style: TextStyle(color: Colors.black54)),
+          const SizedBox(height: 12),
+          ...points.map((p) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  SizedBox(width: 40, child: Text(p.label, style: const TextStyle(fontWeight: FontWeight.w700))),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 12,
+                          width: MediaQuery.of(context).size.width * ratio(p.masuk) * 0.4,
+                          decoration: BoxDecoration(
+                            color: masukColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          height: 12,
+                          width: MediaQuery.of(context).size.width * ratio(p.keluar) * 0.4,
+                          decoration: BoxDecoration(
+                            color: keluarColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text('${p.masuk}', style: const TextStyle(color: masukColor)),
+                      Text('${p.keluar}', style: const TextStyle(color: keluarColor)),
+                    ],
+                  ),
+                ],
               ),
-              width: keluar / 20,
-              child: Center(
-                child: Text(
-                  keluar.toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
-              ),
-            ),
+            );
+          }),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: const [
+              _Legend(color: masukColor, label: 'Obat Masuk'),
+              SizedBox(width: 16),
+              _Legend(color: keluarColor, label: 'Obat Keluar'),
+            ],
           ),
         ],
       ),
@@ -485,58 +348,191 @@ class _StockBar extends StatelessWidget {
   }
 }
 
-class _TopObatItem extends StatelessWidget {
-  final int rank;
-  final String name;
-  final int sold;
-  final String percent;
+class _Legend extends StatelessWidget {
   final Color color;
-  const _TopObatItem({
-    required this.rank,
-    required this.name,
-    required this.sold,
-    required this.percent,
-    required this.color,
-  });
+  final String label;
+  const _Legend({required this.color, required this.label});
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+    return Row(
+      children: [
+        Container(width: 14, height: 8, color: color),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(color: Colors.black54)),
+      ],
+    );
+  }
+}
+
+class _TopProductsCard extends StatelessWidget {
+  final String period;
+  final List<TopProduct> products;
+  const _TopProductsCard({required this.period, required this.products});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xffe9f9f1),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Top 5 Obat Paling Sering Keluar', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+          Text(period, style: const TextStyle(color: Colors.black54)),
+          const SizedBox(height: 12),
+          ...products.asMap().entries.map((entry) {
+            final idx = entry.key + 1;
+            final item = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.white,
+                    child: Text('$idx', style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.black87)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(item.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                        Text('${item.sold} pcs terjual', style: const TextStyle(color: Colors.black54)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: (item.isPositive ? Colors.green : Colors.red).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      item.percentText,
+                      style: TextStyle(
+                        color: item.isPositive ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final String note;
+
+  const _InfoCard({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.note,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: iconColor),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text(note, style: const TextStyle(color: Colors.black54)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(subtitle, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+        ],
+      ),
+    );
+  }
+}
+
+class _InsightCard extends StatelessWidget {
+  final String text;
+  const _InsightCard({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xffe9f2ff),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xffd7e2ff)),
+      ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 28,
-            height: 28,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.green[100],
-              borderRadius: BorderRadius.circular(14),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Center(
-              child: Text(
-                rank.toString(),
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
+            child: const Icon(Icons.insights, color: Color(0xff2a7ae4)),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text('$sold pcs terjual', style: const TextStyle(fontSize: 13)),
+                const Text('Insight', style: TextStyle(fontWeight: FontWeight.w800)),
+                const SizedBox(height: 4),
+                Text(text, style: const TextStyle(color: Colors.black87)),
               ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              percent,
-              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
           ),
         ],
