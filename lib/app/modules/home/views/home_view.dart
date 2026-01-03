@@ -60,23 +60,26 @@ class HomeView extends GetView<HomeController> {
     final lockerNumbers = List<int>.generate(12, (i) => i + 1);
 
     return Obx(() {
+      final strings = _Strings(controller.language.value == 'en');
       final userName = controller.userName.value;
       final role = controller.role.value.toLowerCase();
-      final isKaryawan = role == 'karyawan';
+      final isApoteker = role.contains('apoteker');
+      final isKaryawan = !isApoteker;
 
       Widget body;
       switch (controller.currentTab.value) {
         case 0:
           body = isKaryawan
-              ? _KaryawanHomeTab(accent: accent, userName: userName)
-              : _ApotekerHomeTab(accent: accent, userName: userName);
+              ? _KaryawanHomeTab(accent: accent, userName: userName, strings: strings)
+              : _ApotekerHomeTab(accent: accent, userName: userName, strings: strings);
           break;
         case 1:
           body = isKaryawan
-              ? _StockTab(accent: accent, stockItems: stockItems)
+              ? _StockTab(accent: accent, stockItems: stockItems, strings: strings)
               : _ApotekerShell(
                   userName: userName,
-                  child: _StockTab(accent: accent, stockItems: stockItems, withSafeArea: false),
+                  strings: strings,
+                  child: _StockTab(accent: accent, stockItems: stockItems, withSafeArea: false, strings: strings),
                 );
           break;
         case 2:
@@ -84,17 +87,19 @@ class HomeView extends GetView<HomeController> {
               ? _RackTab(accent: accent, lockerNumbers: lockerNumbers)
               : _ApotekerShell(
                   userName: userName,
+                  strings: strings,
                   child: _RackTab(accent: accent, lockerNumbers: lockerNumbers, withSafeArea: false),
                 );
           break;
         default:
           body = isKaryawan
-              ? _ProfileTab(accent: accent, bg: bg, userName: userName, controller: controller)
+              ? _ProfileTab(accent: accent, bg: bg, userName: userName, controller: controller, strings: strings)
               : _MoreTab(
                   accent: accent,
                   bg: bg,
                   userName: userName,
                   controller: controller,
+                  strings: strings,
                   withSafeArea: true,
                 );
       }
@@ -114,12 +119,19 @@ class HomeView extends GetView<HomeController> {
             selectedItemColor: accent,
             unselectedItemColor: Colors.grey,
             onTap: controller.changeTab,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'Stok'),
-              BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-              BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'Lainnya'),
-            ],
+            items: isKaryawan
+                ? [
+                    BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), label: strings.home),
+                    BottomNavigationBarItem(icon: const Icon(Icons.inventory_2_outlined), label: strings.stock),
+                    BottomNavigationBarItem(icon: const Icon(Icons.grid_view), label: strings.rack),
+                    BottomNavigationBarItem(icon: const Icon(Icons.person_outline), label: strings.profile),
+                  ]
+                : [
+                    BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), label: strings.home),
+                    BottomNavigationBarItem(icon: const Icon(Icons.inventory_2_outlined), label: strings.stock),
+                    BottomNavigationBarItem(icon: const Icon(Icons.grid_view), label: strings.rack),
+                    BottomNavigationBarItem(icon: const Icon(Icons.more_horiz), label: strings.more),
+                  ],
           ),
         ),
         body: body,
@@ -128,18 +140,113 @@ class HomeView extends GetView<HomeController> {
   }
 }
 
+class _Strings {
+  final bool en;
+  const _Strings(this.en);
+
+  String get home => en ? 'Home' : 'Home';
+  String get stock => en ? 'Stock' : 'Stok';
+  String get rack => en ? 'Rack' : 'Rak';
+  String get profile => en ? 'Profile' : 'Profil';
+  String get more => en ? 'More' : 'Lainnya';
+  String get welcome => en ? 'Welcome' : 'Selamat Datang';
+  String get employee => en ? 'Staff' : 'Karyawan';
+  String get morningShift => en ? 'Morning Shift' : 'Shift Pagi';
+  String get moreMenu => en ? 'More Menu' : 'Menu Lainnya';
+  String get management => en ? 'Management' : 'Manajemen';
+  String get settings => en ? 'Settings' : 'Pengaturan';
+  String get appearance => en ? 'Appearance & Language' : 'Pengaturan Tampilan & Bahasa';
+  String get darkMode => en ? 'Dark Mode' : 'Mode Gelap';
+  String get language => en ? 'Language' : 'Bahasa';
+  String get indonesian => en ? 'Indonesian' : 'Indonesia';
+  String get english => en ? 'English' : 'English';
+  String get logout => en ? 'Logout' : 'Keluar';
+  String get sessionInfo => en ? 'Session Info' : 'Informasi Sesi';
+  String get activeShift => en ? 'Active Shift' : 'Shift Aktif';
+  String get loginAs => en ? 'Logged in as' : 'Login sebagai';
+  String get username => en ? 'Username' : 'Username';
+  String get email => en ? 'Email' : 'Email';
+  String get phone => en ? 'Phone' : 'Telepon';
+  String get joined => en ? 'Joined Since' : 'Bergabung Sejak';
+  String get accountStatus => en ? 'Account Status' : 'Status Akun';
+  String get active => en ? 'Active' : 'Aktif';
+  String get stockDuty => en ? 'Stock Responsibilities:' : 'Tanggung Jawab Stok:';
+  String get duty1 => en ? 'Update stock after receiving supplier shipment' : 'Update stok setelah menerima kiriman supplier';
+  String get duty2 => en ? 'Check expiration dates regularly' : 'Periksa tanggal kadaluarsa secara berkala';
+  String get duty3 => en ? 'Update rack location if changes occur' : 'Update lokasi rak jika ada perubahan';
+  String get duty4 => en ? 'Report out-of-stock or damaged medicine' : 'Laporkan stok habis atau obat rusak';
+  String get restricted => en ? 'Restricted Access:' : 'Akses Terbatas:';
+  String get rest1 => en ? 'No access to payment system' : 'Tidak ada akses ke sistem pembayaran';
+  String get rest2 => en ? 'Cannot view price and revenue' : 'Tidak dapat melihat harga dan revenue';
+  String get rest3 => en ? 'Cannot view patient financial data' : 'Tidak dapat melihat data finansial pasien';
+  String get rest4 => en ? 'Cannot perform medical consultations' : 'Tidak dapat melakukan konsultasi medis';
+  String get criticalAlert => en ? 'CRITICAL ALERT!' : 'ALERT KRITIS!';
+  String get expired => en ? 'Expired:' : 'Kadaluarsa:';
+  String get outOfStock => en ? 'Out of stock:' : 'Stok Habis:';
+  String get totalMeds => en ? 'Total Medicines' : 'Total Obat';
+  String get lowStock => en ? 'Low Stock' : 'Stok Hampir Habis';
+  String get featured => en ? 'Highlighted' : 'Fitur Unggulan';
+  String get expSoon => en ? 'Expiring Soon' : 'Hampir Kadaluarsa';
+  String get posHistory => en ? 'POS History' : 'Riwayat POS';
+  String get transactionQueue => en ? 'Transaction Queue' : 'Antrian Transaksi';
+  String get reportsAnalytics => en ? 'Reports & Analytics' : 'Laporan & Analitik';
+  String get addNewMed => en ? 'Add New Medicine' : 'Tambah Obat Baru';
+  String get openPos => en ? 'Open POS' : 'Buka Kasir (POS)';
+  String get waitingPickup => en ? 'Waiting Pickup' : 'Menunggu Diambil';
+  String get newTask => en ? 'New task' : 'Tugas baru';
+  String get readyToPay => en ? 'Ready to Pay' : 'Siap Dibayar';
+  String get waitingCashier => en ? 'Waiting cashier' : 'Menunggu kasir';
+  String get stockAlert => en ? 'Stock Alert' : 'Alert Stok';
+  String get needAttention => en ? 'Need attention' : 'Perlu perhatian';
+  String get doneToday => en ? 'Done Today' : 'Selesai Hari Ini';
+  String get tasksDone => en ? 'Tasks completed' : 'Tugas selesai';
+  String get todayPerformance => en ? 'Today\'s Performance' : 'Kinerja Hari Ini';
+  String get tasksCompleted => en ? 'Tasks Completed' : 'Tugas Diselesaikan';
+  String get transactions => en ? 'transactions' : 'transaksi';
+  String get medsPicked => en ? 'Medicine Picked' : 'Obat Diambil';
+  String get items => en ? 'items' : 'item';
+  String get stockUpdates => en ? 'Stock Updates' : 'Update Stok';
+  String get updates => en ? 'updates' : 'update';
+  String get viewQueue => en ? 'View Transaction Queue' : 'Lihat Antrian Transaksi';
+  String get karyawanTasks => en ? 'Staff Tasks:' : 'Tugas Karyawan:';
+  String get kTask1 => en ? 'Pick meds from rack per transaction' : 'Mengambil obat dari rak sesuai transaksi';
+  String get kTask2 => en ? 'Prepare compounded medicines' : 'Menyiapkan racikan obat';
+  String get kTask3 => en ? 'Manage physical stock' : 'Mengelola stok fisik';
+  String get kTask4 => en ? 'Update rack location and expiry' : 'Update lokasi rak dan kadaluarsa';
+  String get pharmacistLead => en ? 'Lead Pharmacist' : 'Apoteker Penanggung Jawab';
+  String get needAttentionStats => en ? 'Need Attention' : 'Perlu Perhatian';
+  String get activeRacks => en ? 'Active Racks' : 'Rak Aktif';
+  String get recipeCompound => en ? 'Prescriptions & Compounds' : 'Resep & Racikan';
+  String get supplierPo => en ? 'Suppliers & PO' : 'Supplier & PO';
+  String get patientData => en ? 'Patient Data' : 'Data Pasien';
+  String get shiftMgmt => en ? 'Shift Management' : 'Manajemen Shift';
+  String get dailyReport => en ? 'Daily Report' : 'Laporan Harian';
+  String get versionLabel => en ? 'ApotekCare v1.0.0' : 'ApotekCare v1.0.0';
+  String get stockManageTitle => en ? 'Stock Management' : 'Kelola Stok';
+  String get stockSearchHint => en ? 'Search medicines, categories, or rack location...' : 'Cari obat, kategori, atau lokasi rak...';
+  String get rackTitle => en ? 'Medicine Rack Map' : 'Peta Rak Obat';
+  String get rackSubtitle => en ? 'Manage storage locations' : 'Kelola lokasi penyimpanan obat';
+  String get filterAll => en ? 'All' : 'Semua';
+  String get filterSafe => en ? 'Safe' : 'Aman';
+  String get filterLow => en ? 'Low' : 'Rendah';
+  String get mapTitle => en ? 'Select Locker' : 'Pilih Loker';
+  String get mapSubtitle => en ? 'Tap locker for details' : 'Klik loker untuk melihat detail';
+  String get searchPlaceholder => en ? 'Search medicines...' : 'Cari obat...';
+}
+
 class _ApotekerShell extends StatelessWidget {
   final String userName;
   final Widget child;
+  final _Strings strings;
 
-  const _ApotekerShell({required this.userName, required this.child});
+  const _ApotekerShell({required this.userName, required this.child, required this.strings});
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Column(
         children: [
-          _ApotekerHeader(userName: userName),
+          _ApotekerHeader(userName: userName, strings: strings),
           Expanded(child: child),
         ],
       ),
@@ -149,8 +256,9 @@ class _ApotekerShell extends StatelessWidget {
 
 class _ApotekerHeader extends StatelessWidget {
   final String userName;
+  final _Strings strings;
 
-  const _ApotekerHeader({required this.userName});
+  const _ApotekerHeader({required this.userName, required this.strings});
 
   @override
   Widget build(BuildContext context) {
@@ -162,10 +270,6 @@ class _ApotekerHeader extends StatelessWidget {
           colors: [Color(0xff07b073), Color(0xff029a63)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(26),
-          bottomRight: Radius.circular(26),
         ),
       ),
       child: Row(
@@ -186,7 +290,7 @@ class _ApotekerHeader extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Selamat Datang', style: TextStyle(color: Colors.white70)),
+                  Text(strings.welcome, style: const TextStyle(color: Colors.white70)),
                   Text(
                     userName,
                     style: const TextStyle(
@@ -195,7 +299,7 @@ class _ApotekerHeader extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const Text('Shift Pagi', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  Text(strings.morningShift, style: const TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),
             ],
@@ -248,15 +352,16 @@ class _ApotekerHeader extends StatelessWidget {
 class _ApotekerHomeTab extends StatelessWidget {
   final Color accent;
   final String userName;
+  final _Strings strings;
 
-  const _ApotekerHomeTab({required this.accent, required this.userName});
+  const _ApotekerHomeTab({required this.accent, required this.userName, required this.strings});
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Column(
         children: [
-          _ApotekerHeader(userName: userName),
+          _ApotekerHeader(userName: userName, strings: strings),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 28, top: 12),
@@ -266,8 +371,8 @@ class _ApotekerHomeTab extends StatelessWidget {
                   children: [
                     const SizedBox(height: 8),
                     _StatCard(
-                      title: 'Total Obat',
-                      value: '248 Item',
+                      title: strings.totalMeds,
+                      value: strings.en ? '248 Items' : '248 Item',
                       icon: Icons.inventory_2_outlined,
                       accent: accent,
                       trailing: Icons.inventory_outlined,
@@ -279,27 +384,27 @@ class _ApotekerHomeTab extends StatelessWidget {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(14),
                             onTap: () => Get.toNamed(Routes.stockCheck),
-                            child: _SmallCard(
-                              title: 'Stok Hampir Habis',
-                              subtitle: 'Fitur Unggulan',
-                              value: '8 Item',
-                              icon: Icons.warning_amber_rounded,
-                              iconColor: const Color(0xffe6a11d),
-                            ),
+                          child: _SmallCard(
+                            title: strings.lowStock,
+                            subtitle: strings.featured,
+                            value: strings.en ? '8 Items' : '8 Item',
+                            icon: Icons.warning_amber_rounded,
+                            iconColor: const Color(0xffe6a11d),
                           ),
+                        ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: InkWell(
                             borderRadius: BorderRadius.circular(14),
                             onTap: () => Get.toNamed(Routes.stockCheck),
-                            child: _SmallCard(
-                              title: 'Hampir Kadaluarsa',
-                              value: '12 Item',
-                              icon: Icons.event_busy_outlined,
-                              iconColor: const Color(0xffd64545),
-                            ),
+                          child: _SmallCard(
+                            title: strings.expSoon,
+                            value: strings.en ? '12 Items' : '12 Item',
+                            icon: Icons.event_busy_outlined,
+                            iconColor: const Color(0xffd64545),
                           ),
+                        ),
                         ),
                       ],
                     ),
@@ -309,7 +414,7 @@ class _ApotekerHomeTab extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => Get.toNamed(Routes.posHistory),
                         icon: const Icon(Icons.receipt_long),
-                        label: const Text('Riwayat POS'),
+                        label: Text(strings.posHistory),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: accent),
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -325,7 +430,7 @@ class _ApotekerHomeTab extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => Get.toNamed(Routes.antrian),
                         icon: const Icon(Icons.list_alt),
-                        label: const Text('Antrian Transaksi'),
+                        label: Text(strings.transactionQueue),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: accent),
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -341,7 +446,7 @@ class _ApotekerHomeTab extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => Get.toNamed(Routes.analytics),
                         icon: const Icon(Icons.show_chart_outlined),
-                        label: const Text('Laporan & Analitik'),
+                        label: Text(strings.reportsAnalytics),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: accent),
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -357,7 +462,7 @@ class _ApotekerHomeTab extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => Get.toNamed(Routes.addEditMedicine),
                         icon: const Icon(Icons.add_circle_outline),
-                        label: const Text('Tambah Obat Baru'),
+                        label: Text(strings.addNewMed),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: accent),
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -373,7 +478,7 @@ class _ApotekerHomeTab extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => Get.toNamed(Routes.kasir),
                         icon: const Icon(Icons.point_of_sale),
-                        label: const Text('Buka Kasir (POS)'),
+                        label: Text(strings.openPos),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: accent),
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -384,7 +489,7 @@ class _ApotekerHomeTab extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    _NotifPanel(accent: accent),
+                    _NotifPanel(accent: accent, strings: strings),
                   ],
                 ),
               ),
@@ -399,8 +504,9 @@ class _ApotekerHomeTab extends StatelessWidget {
 class _KaryawanHomeTab extends StatelessWidget {
   final Color accent;
   final String userName;
+  final _Strings strings;
 
-  const _KaryawanHomeTab({required this.accent, required this.userName});
+  const _KaryawanHomeTab({required this.accent, required this.userName, required this.strings});
 
   @override
   Widget build(BuildContext context) {
@@ -419,10 +525,6 @@ class _KaryawanHomeTab extends StatelessWidget {
                       colors: [Color(0xff07b073), Color(0xff029a63)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(26),
-                      bottomRight: Radius.circular(26),
                     ),
                   ),
                   child: Row(
@@ -443,7 +545,7 @@ class _KaryawanHomeTab extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Selamat Datang', style: TextStyle(color: Colors.white70)),
+                              Text(strings.welcome, style: const TextStyle(color: Colors.white70)),
                               Text(
                                 userName,
                                 style: const TextStyle(
@@ -454,9 +556,10 @@ class _KaryawanHomeTab extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Row(
-                                children: const [
-                                  Text('Karyawan', style: TextStyle(color: Colors.white)),
-                                  Text('  ·  Shift Pagi', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                children: [
+                                  Text(strings.employee, style: const TextStyle(color: Colors.white)),
+                                  Text('  ·  ${strings.morningShift}',
+                                      style: const TextStyle(color: Colors.white70, fontSize: 12)),
                                 ],
                               ),
                             ],
@@ -465,46 +568,40 @@ class _KaryawanHomeTab extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(9),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.14),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.notifications_none, color: Colors.white),
-                              ),
-                              Positioned(
-                                right: -1,
-                                top: -2,
-                                child: Container(
-                                  height: 18,
-                                  width: 18,
+                          GestureDetector(
+                            onTap: () => Get.toNamed(Routes.notifikasi),
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(9),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xffde4242),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: Colors.white, width: 1.4),
+                                    color: Colors.white.withValues(alpha: 0.14),
+                                    shape: BoxShape.circle,
                                   ),
-                                  child: const Center(
-                                    child: Text(
-                                      '2',
-                                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                                  child: const Icon(Icons.notifications_none, color: Colors.white),
+                                ),
+                                Positioned(
+                                  right: -1,
+                                  top: -2,
+                                  child: Container(
+                                    height: 18,
+                                    width: 18,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xffde4242),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: Colors.white, width: 1.4),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        '2',
+                                        style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(width: 10),
-                          Container(
-                            padding: const EdgeInsets.all(9),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.14),
-                              shape: BoxShape.circle,
+                              ],
                             ),
-                            child: const Icon(Icons.notifications_active_outlined, color: Colors.white),
                           ),
                         ],
                       ),
@@ -529,19 +626,19 @@ class _KaryawanHomeTab extends StatelessWidget {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        _AlertHeader(),
-                        SizedBox(height: 8),
+                      children: [
+                        _AlertHeader(strings: strings),
+                        const SizedBox(height: 8),
                         _AlertRow(
                           icon: Icons.close,
                           iconColor: Colors.white,
-                          label: 'Kadaluwarsa: Ibuprofen 400mg (A3)',
+                          label: '${strings.expired} Ibuprofen 400mg (A3)',
                         ),
-                        SizedBox(height: 6),
+                        const SizedBox(height: 6),
                         _AlertRow(
                           icon: Icons.circle,
-                          iconColor: Color(0xff7ff6b1),
-                          label: 'Stok Habis: Amoxicillin 500mg (B2)',
+                          iconColor: const Color(0xff7ff6b1),
+                          label: '${strings.outOfStock} Amoxicillin 500mg (B2)',
                         ),
                       ],
                     ),
@@ -556,43 +653,44 @@ class _KaryawanHomeTab extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _GlassGrid(
-                    children: const [
+                    children: [
                       _KaryawanTaskCard(
-                        title: 'Menunggu Diambil',
+                        title: strings.en ? 'Waiting Pickup' : 'Menunggu Diambil',
                         value: '1',
-                        subtitle: 'Tugas baru',
+                        subtitle: strings.en ? 'New task' : 'Tugas baru',
                         icon: Icons.timelapse,
-                        color: Color(0xffe6a927),
-                        bgColor: Color(0xfffff6e5),
+                        color: const Color(0xffe6a927),
+                        bgColor: const Color(0xfffff6e5),
                       ),
                       _KaryawanTaskCard(
-                        title: 'Siap Dibayar',
+                        title: strings.en ? 'Ready to Pay' : 'Siap Dibayar',
                         value: '1',
-                        subtitle: 'Menunggu kasir',
+                        subtitle: strings.en ? 'Waiting cashier' : 'Menunggu kasir',
                         icon: Icons.verified_outlined,
-                        color: Color(0xff1eb978),
-                        bgColor: Color(0xffe9f8f1),
+                        color: const Color(0xff1eb978),
+                        bgColor: const Color(0xffe9f8f1),
                       ),
                       _KaryawanTaskCard(
-                        title: 'Alert Stok',
+                        title: strings.en ? 'Stock Alert' : 'Alert Stok',
                         value: '2',
-                        subtitle: 'Perlu perhatian',
+                        subtitle: strings.en ? 'Need attention' : 'Perlu perhatian',
                         icon: Icons.error_outline,
-                        color: Color(0xffd64545),
-                        bgColor: Color(0xffffefef),
+                        color: const Color(0xffd64545),
+                        bgColor: const Color(0xffffefef),
                       ),
                       _KaryawanTaskCard(
-                        title: 'Selesai Hari Ini',
+                        title: strings.en ? 'Done Today' : 'Selesai Hari Ini',
                         value: '12',
-                        subtitle: 'Tugas selesai',
+                        subtitle: strings.en ? 'Tasks completed' : 'Tugas selesai',
                         icon: Icons.widgets_outlined,
-                        color: Color(0xff3f7fea),
-                        bgColor: Color(0xffeef3ff),
+                        color: const Color(0xff3f7fea),
+                        bgColor: const Color(0xffeef3ff),
                       ),
                     ],
                   ),
                   const SizedBox(height: 18),
-                  const Text('Kinerja Hari Ini', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                  Text(strings.en ? 'Today\'s Performance' : 'Kinerja Hari Ini',
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                   const SizedBox(height: 12),
                   Container(
                     width: double.infinity,
@@ -609,26 +707,26 @@ class _KaryawanHomeTab extends StatelessWidget {
                       ],
                     ),
                     child: Column(
-                      children: const [
+                      children: [
                         _MetricItem(
                           icon: Icons.check_circle_outline,
-                          iconColor: Color(0xff1eb978),
-                          label: 'Tugas Diselesaikan',
-                          value: '12 transaksi',
+                          iconColor: const Color(0xff1eb978),
+                          label: strings.en ? 'Tasks Completed' : 'Tugas Diselesaikan',
+                          value: strings.en ? '12 transactions' : '12 transaksi',
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         _MetricItem(
                           icon: Icons.inventory_2_outlined,
-                          iconColor: Color(0xff3f7fea),
-                          label: 'Obat Diambil',
-                          value: '45 item',
+                          iconColor: const Color(0xff3f7fea),
+                          label: strings.en ? 'Medicine Picked' : 'Obat Diambil',
+                          value: strings.en ? '45 items' : '45 item',
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         _MetricItem(
                           icon: Icons.update_outlined,
-                          iconColor: Color(0xff8f4ee3),
-                          label: 'Update Stok',
-                          value: '8 update',
+                          iconColor: const Color(0xff8f4ee3),
+                          label: strings.en ? 'Stock Updates' : 'Update Stok',
+                          value: strings.en ? '8 updates' : '8 update',
                         ),
                       ],
                     ),
@@ -652,10 +750,10 @@ class _KaryawanHomeTab extends StatelessWidget {
                       children: [
                         const Icon(Icons.receipt_long, color: Colors.white),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Lihat Antrian Transaksi',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                            strings.viewQueue,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
                           ),
                         ),
                         Container(
@@ -665,7 +763,7 @@ class _KaryawanHomeTab extends StatelessWidget {
                             borderRadius: BorderRadius.circular(18),
                           ),
                           child: Text(
-                            '1 menunggu',
+                            strings.en ? '1 waiting' : '1 menunggu',
                             style: TextStyle(color: accent, fontWeight: FontWeight.w700),
                           ),
                         ),
@@ -683,15 +781,15 @@ class _KaryawanHomeTab extends StatelessWidget {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        _MetricHeader(),
-                        SizedBox(height: 10),
-                        _BulletTaskItem(text: 'Mengambil obat dari rak sesuai transaksi'),
-                        _BulletTaskItem(text: 'Menyiapkan racikan obat'),
-                        _BulletTaskItem(text: 'Mengelola stok fisik'),
-                        _BulletTaskItem(text: 'Update lokasi rak dan kadaluarsa'),
-                      ],
-                    ),
+                    children: [
+                      _MetricHeader(strings: strings),
+                      const SizedBox(height: 10),
+                      _BulletTaskItem(text: strings.kTask1),
+                      _BulletTaskItem(text: strings.kTask2),
+                      _BulletTaskItem(text: strings.kTask3),
+                      _BulletTaskItem(text: strings.kTask4),
+                    ],
+                  ),
                   ),
                 ],
               ),
@@ -704,17 +802,18 @@ class _KaryawanHomeTab extends StatelessWidget {
 }
 
 class _AlertHeader extends StatelessWidget {
-  const _AlertHeader();
+  final _Strings strings;
+  const _AlertHeader({required this.strings});
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: const [
-        Icon(Icons.warning_amber_rounded, color: Colors.white),
-        SizedBox(width: 8),
+      children: [
+        const Icon(Icons.warning_amber_rounded, color: Colors.white),
+        const SizedBox(width: 8),
         Text(
-          'ALERT KRITIS!',
-          style: TextStyle(
+          strings.criticalAlert,
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w800,
             fontSize: 15,
@@ -852,17 +951,18 @@ class _MetricItem extends StatelessWidget {
 }
 
 class _MetricHeader extends StatelessWidget {
-  const _MetricHeader();
+  final _Strings strings;
+  const _MetricHeader({required this.strings});
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: const [
-        Icon(Icons.assignment_turned_in_outlined, color: Color(0xff3f7fea)),
-        SizedBox(width: 8),
+      children: [
+        const Icon(Icons.assignment_turned_in_outlined, color: Color(0xff3f7fea)),
+        const SizedBox(width: 8),
         Text(
-          'Tugas Karyawan:',
-          style: TextStyle(fontWeight: FontWeight.w800),
+          strings.karyawanTasks,
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ],
     );
@@ -1089,7 +1189,9 @@ class _NotifDetailItem extends StatelessWidget {
 class _NotifPanel extends StatelessWidget {
   final Color accent;
 
-  const _NotifPanel({required this.accent});
+  final _Strings strings;
+
+  const _NotifPanel({required this.accent, required this.strings});
 
   @override
   Widget build(BuildContext context) {
@@ -1115,10 +1217,10 @@ class _NotifPanel extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
-                children: const [
-                  Icon(Icons.event_busy_outlined, color: Color(0xffd64545)),
-                  SizedBox(width: 8),
-                  Text('Notifikasi Penting', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                children: [
+                  const Icon(Icons.event_busy_outlined, color: Color(0xffd64545)),
+                  const SizedBox(width: 8),
+                  Text(strings.criticalAlert, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                 ],
               ),
               TextButton(
@@ -1192,11 +1294,13 @@ class _StockTab extends StatelessWidget {
   final Color accent;
   final List<_StockItem> stockItems;
   final bool withSafeArea;
+  final _Strings strings;
 
   const _StockTab({
     required this.accent,
     required this.stockItems,
     this.withSafeArea = true,
+    required this.strings,
   });
 
   @override
@@ -1213,10 +1317,6 @@ class _StockTab extends StatelessWidget {
                 colors: [Color(0xff05b77a), Color(0xff02a867)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(28),
-                bottomRight: Radius.circular(28),
               ),
             ),
             child: Column(
@@ -1296,7 +1396,7 @@ class _StockTab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const _StockInfoNote(),
+                _StockInfoNote(strings: strings),
               ],
             ),
           ),
@@ -1548,7 +1648,8 @@ class _StockDetailRow extends StatelessWidget {
 }
 
 class _StockInfoNote extends StatelessWidget {
-  const _StockInfoNote();
+  final _Strings strings;
+  const _StockInfoNote({required this.strings});
 
   @override
   Widget build(BuildContext context) {
@@ -1562,22 +1663,22 @@ class _StockInfoNote extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Row(
             children: [
-              Icon(Icons.info_outline, color: Color(0xff3f7fea)),
-              SizedBox(width: 8),
+              const Icon(Icons.info_outline, color: Color(0xff3f7fea)),
+              const SizedBox(width: 8),
               Text(
-                'Tanggung Jawab Stok:',
-                style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xff3f7fea)),
+                strings.stockDuty,
+                style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xff3f7fea)),
               ),
             ],
           ),
-          SizedBox(height: 8),
-          _BulletTaskItem(text: 'Update stok setelah menerima kiriman supplier'),
-          _BulletTaskItem(text: 'Periksa tanggal kadaluarsa secara berkala'),
-          _BulletTaskItem(text: 'Update lokasi rak jika ada perubahan'),
-          _BulletTaskItem(text: 'Laporkan stok habis atau obat rusak'),
+          const SizedBox(height: 8),
+          _BulletTaskItem(text: strings.duty1),
+          _BulletTaskItem(text: strings.duty2),
+          _BulletTaskItem(text: strings.duty3),
+          _BulletTaskItem(text: strings.duty4),
         ],
       ),
     );
@@ -1611,10 +1712,6 @@ class _RackTab extends StatelessWidget {
                 colors: [Color(0xff05b77a), Color(0xff02a867)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(28),
-                bottomRight: Radius.circular(28),
               ),
             ),
             child: Column(
@@ -1811,12 +1908,14 @@ class _ProfileTab extends StatelessWidget {
   final Color bg;
   final String userName;
   final HomeController controller;
+  final _Strings strings;
 
   const _ProfileTab({
     required this.accent,
     required this.bg,
     required this.userName,
     required this.controller,
+    required this.strings,
   });
 
   @override
@@ -1834,10 +1933,6 @@ class _ProfileTab extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(28),
-                bottomRight: Radius.circular(28),
-              ),
             ),
             child: Row(
               children: [
@@ -1853,9 +1948,9 @@ class _ProfileTab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Profil',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+                Text(
+                  strings.profile,
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
                 ),
               ],
             ),
@@ -1901,34 +1996,34 @@ class _ProfileTab extends StatelessWidget {
                                   userName,
                                   style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                                 ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    _SmallBadge(label: 'Karyawan', color: const Color(0xff1eb978), bg: const Color(0xffe9f8f1)),
-                                    const SizedBox(width: 8),
-                                    _SmallBadge(label: 'Shift Pagi', color: const Color(0xff5c8dff), bg: const Color(0xffe8edff)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      const _InfoRow(icon: Icons.person_outline, label: 'Username', value: 'andi.pratama'),
-                      const Divider(),
-                      const _InfoRow(icon: Icons.email_outlined, label: 'Email', value: 'andi.pratama@apotekcare.com'),
-                      const Divider(),
-                      const _InfoRow(icon: Icons.phone_outlined, label: 'Telepon', value: '081234567890'),
-                      const Divider(),
-                      const _InfoRow(icon: Icons.calendar_today_outlined, label: 'Bergabung Sejak', value: '15 Januari 2024'),
-                      const Divider(),
-                      const _InfoRow(icon: Icons.verified_user_outlined, label: 'Status Akun', value: 'Aktif', valueColor: Color(0xff1eb978)),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                            _SmallBadge(label: strings.employee, color: const Color(0xff1eb978), bg: const Color(0xffe9f8f1)),
+                            const SizedBox(width: 8),
+                            _SmallBadge(label: strings.morningShift, color: const Color(0xff5c8dff), bg: const Color(0xffe8edff)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _InfoRow(icon: Icons.person_outline, label: strings.username, value: 'andi.pratama'),
+              const Divider(),
+              _InfoRow(icon: Icons.email_outlined, label: strings.email, value: 'andi.pratama@apotekcare.com'),
+              const Divider(),
+              _InfoRow(icon: Icons.phone_outlined, label: strings.phone, value: '081234567890'),
+              const Divider(),
+              _InfoRow(icon: Icons.calendar_today_outlined, label: strings.joined, value: '15 Januari 2024'),
+              const Divider(),
+              _InfoRow(icon: Icons.verified_user_outlined, label: strings.accountStatus, value: strings.active, valueColor: const Color(0xff1eb978)),
                     ],
                   ),
                 ),
                 const SizedBox(height: 12),
-                const _StockInfoNote(),
+                _StockInfoNote(strings: strings),
                 const SizedBox(height: 12),
                 Container(
                   width: double.infinity,
@@ -1946,86 +2041,45 @@ class _ProfileTab extends StatelessWidget {
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      _RestrictedAccessHeader(),
-                      SizedBox(height: 8),
-                      _BulletTaskItem(text: 'Tidak ada akses ke sistem pembayaran'),
-                      _BulletTaskItem(text: 'Tidak dapat melihat harga dan revenue'),
-                      _BulletTaskItem(text: 'Tidak dapat melihat data finansial pasien'),
-                      _BulletTaskItem(text: 'Tidak dapat melakukan konsultasi medis'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text('Informasi Sesi', style: TextStyle(fontWeight: FontWeight.w800)),
-                      SizedBox(height: 10),
-                      _SessionInfoRow(label: 'Shift Aktif', value: 'Shift Pagi'),
-                      SizedBox(height: 6),
-                      _SessionInfoRow(label: 'Login sebagai', value: 'Karyawan', valueColor: Color(0xff1eb978)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xfffff4d7),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.wb_sunny_outlined, color: Color(0xffd69a00)),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Mode Terang',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                      Obx(
-                        () => Switch(
-                          value: controller.isLightMode.value,
-                          onChanged: controller.toggleLightMode,
-                          activeThumbColor: accent,
-                          activeTrackColor: accent.withValues(alpha: 0.4),
-                        ),
-                      ),
+                      _RestrictedAccessHeader(strings: strings),
+                      const SizedBox(height: 8),
+                      _BulletTaskItem(text: strings.rest1),
+                      _BulletTaskItem(text: strings.rest2),
+                      _BulletTaskItem(text: strings.rest3),
+                      _BulletTaskItem(text: strings.rest4),
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(strings.sessionInfo, style: const TextStyle(fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 10),
+                      _SessionInfoRow(label: strings.activeShift, value: strings.morningShift),
+                      const SizedBox(height: 6),
+                      _SessionInfoRow(label: strings.loginAs, value: strings.employee, valueColor: const Color(0xff1eb978)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _SettingsCard(accent: accent, controller: controller, strings: strings),
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -2036,7 +2090,7 @@ class _ProfileTab extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     icon: const Icon(Icons.logout, color: Colors.white),
-                    label: const Text('Keluar', style: TextStyle(fontWeight: FontWeight.w700)),
+                    label: Text(strings.logout, style: const TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ),
               ],
@@ -2108,15 +2162,16 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _RestrictedAccessHeader extends StatelessWidget {
-  const _RestrictedAccessHeader();
+  final _Strings strings;
+  const _RestrictedAccessHeader({required this.strings});
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: const [
-        Icon(Icons.lock_outline, color: Color(0xffd19026)),
-        SizedBox(width: 8),
-        Text('Akses Terbatas:', style: TextStyle(fontWeight: FontWeight.w800)),
+      children: [
+        const Icon(Icons.lock_outline, color: Color(0xffd19026)),
+        const SizedBox(width: 8),
+        Text(strings.restricted, style: const TextStyle(fontWeight: FontWeight.w800)),
       ],
     );
   }
@@ -2141,18 +2196,98 @@ class _SessionInfoRow extends StatelessWidget {
   }
 }
 
+class _SettingsCard extends StatelessWidget {
+  final Color accent;
+  final HomeController controller;
+  final bool compact;
+  final _Strings strings;
+
+  const _SettingsCard({
+    required this.accent,
+    required this.controller,
+    required this.strings,
+    this.compact = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () {
+        final lang = controller.language.value;
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                strings.appearance,
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: compact ? 14 : 15),
+              ),
+              const SizedBox(height: 10),
+              // Dark mode disabled globally; remove toggle to avoid confusion.
+              Text(strings.language, style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ChoiceChip(
+                    key: const ValueKey('lang-id'),
+                    label: Text(strings.indonesian),
+                    selected: lang == 'id',
+                    selectedColor: accent.withValues(alpha: 0.14),
+                    labelStyle: TextStyle(
+                      color: lang == 'id' ? accent : Colors.black87,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    onSelected: (_) => controller.setLanguage('id'),
+                  ),
+                  ChoiceChip(
+                    key: const ValueKey('lang-en'),
+                    label: Text(strings.english),
+                    selected: lang == 'en',
+                    selectedColor: accent.withValues(alpha: 0.14),
+                    labelStyle: TextStyle(
+                      color: lang == 'en' ? accent : Colors.black87,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    onSelected: (_) => controller.setLanguage('en'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _MoreTab extends StatelessWidget {
   final Color accent;
   final Color bg;
   final String userName;
   final HomeController controller;
   final bool withSafeArea;
+  final _Strings strings;
 
   const _MoreTab({
     required this.accent,
     required this.bg,
     required this.userName,
     required this.controller,
+    required this.strings,
     this.withSafeArea = true,
   });
 
@@ -2179,9 +2314,9 @@ class _MoreTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Menu Lainnya',
-                  style: TextStyle(
+                Text(
+                  strings.moreMenu,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -2211,9 +2346,9 @@ class _MoreTab extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const Text(
-                        'Apoteker Penanggung Jawab',
-                        style: TextStyle(color: Colors.white70),
+                      Text(
+                        strings.pharmacistLead,
+                        style: const TextStyle(color: Colors.white70),
                       ),
                     ],
                   ),
@@ -2228,10 +2363,10 @@ class _MoreTab extends StatelessWidget {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: const [
-                      _StatNumber(label: 'Total Obat', value: '248'),
-                      _StatNumber(label: 'Perlu Perhatian', value: '12'),
-                      _StatNumber(label: 'Rak Aktif', value: '5'),
+                    children: [
+                      _StatNumber(label: strings.totalMeds, value: '248'),
+                      _StatNumber(label: strings.needAttentionStats, value: '12'),
+                      _StatNumber(label: strings.activeRacks, value: '5'),
                     ],
                   ),
                 ),
@@ -2243,72 +2378,66 @@ class _MoreTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Manajemen',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                Text(
+                  strings.management,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                 ),
                 const SizedBox(height: 12),
-                const _MenuItem(
-                  icon: Icons.local_shipping_outlined,
-                  title: 'Supplier & PO',
-                  bgColor: Color(0xffe7f7ef),
-                  iconColor: Color(0xff06b47c),
+                _MenuItem(
+                  icon: Icons.receipt_long,
+                  title: strings.recipeCompound,
+                  bgColor: const Color(0xfff2ecff),
+                  iconColor: const Color(0xff7f5bff),
+                  onTap: () => Get.toNamed(Routes.addEditMedicine),
                 ),
                 const SizedBox(height: 10),
-                const _MenuItem(
+                _MenuItem(
+                  icon: Icons.local_shipping_outlined,
+                  title: strings.supplierPo,
+                  bgColor: const Color(0xffe7f7ef),
+                  iconColor: const Color(0xff06b47c),
+                  onTap: () => Get.toNamed(Routes.supplier),
+                ),
+                const SizedBox(height: 10),
+                _MenuItem(
                   icon: Icons.show_chart_outlined,
-                  title: 'Laporan & Analitik',
-                  bgColor: Color(0xffe7f0ff),
-                  iconColor: Color(0xff2f6fea),
+                  title: strings.reportsAnalytics,
+                  bgColor: const Color(0xffe7f0ff),
+                  iconColor: const Color(0xff2f6fea),
+                  onTap: () => Get.toNamed(Routes.analytics),
+                ),
+                const SizedBox(height: 10),
+                _MenuItem(
+                  icon: Icons.people_alt_outlined,
+                  title: strings.patientData,
+                  bgColor: const Color(0xfff2ecff),
+                  iconColor: const Color(0xff7f5bff),
+                  onTap: () => Get.toNamed(Routes.patient),
+                ),
+                const SizedBox(height: 10),
+                _MenuItem(
+                  icon: Icons.calendar_month_outlined,
+                  title: strings.shiftMgmt,
+                  bgColor: const Color(0xfffff1e0),
+                  iconColor: const Color(0xffe29532),
+                  onTap: () => Get.toNamed(Routes.shiftManagement),
+                ),
+                const SizedBox(height: 10),
+                _MenuItem(
+                  icon: Icons.description_outlined,
+                  title: strings.dailyReport,
+                  bgColor: const Color(0xffe7f0ff),
+                  iconColor: const Color(0xff2f6fea),
+                  onTap: () => Get.toNamed(Routes.dailyReport),
                 ),
                 const SizedBox(height: 18),
-                const Text(
-                  'Pengaturan',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                Text(
+                  strings.settings,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                 ),
                 const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xfffff4d7),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.wb_sunny_outlined, color: Color(0xffd69a00)),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Mode Terang',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                      Obx(
-                        () => Switch(
-                          value: controller.isLightMode.value,
-                          onChanged: controller.toggleLightMode,
-                          activeThumbColor: accent,
-                          activeTrackColor: accent.withValues(alpha: 0.4),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
+                _SettingsCard(accent: accent, controller: controller, strings: strings, compact: true),
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
@@ -2319,9 +2448,9 @@ class _MoreTab extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     icon: const Icon(Icons.logout, color: Color(0xffd64545)),
-                    label: const Text(
-                      'Keluar',
-                      style: TextStyle(color: Color(0xffd64545), fontWeight: FontWeight.w700),
+                    label: Text(
+                      strings.logout,
+                      style: const TextStyle(color: Color(0xffd64545), fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -2349,48 +2478,54 @@ class _MenuItem extends StatelessWidget {
   final String title;
   final Color bgColor;
   final Color iconColor;
+  final VoidCallback? onTap;
 
   const _MenuItem({
     required this.icon,
     required this.title,
     required this.bgColor,
     required this.iconColor,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(10),
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
-            child: Icon(icon, color: iconColor),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: iconColor),
             ),
-          ),
-          const Icon(Icons.chevron_right, color: Colors.black45),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.black45),
+          ],
+        ),
       ),
     );
   }

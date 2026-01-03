@@ -136,26 +136,26 @@ class AntrianView extends GetView<AntrianController> {
         selectedItemColor: accent,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
-          switch (index) {
-            case 0:
-              Get.offAllNamed(Routes.home);
-              break;
-            case 1:
-              Get.offAllNamed(Routes.stok);
-              break;
-            case 2:
-              Get.offAllNamed(Routes.rak);
-              break;
-            default:
-              Get.offAllNamed(Routes.lainnya);
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'Stok'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'Lainnya'),
-        ],
+        switch (index) {
+          case 0:
+            Get.offAllNamed(Routes.home);
+            break;
+          case 1:
+            Get.offAllNamed(Routes.stok);
+            break;
+          case 2:
+            Get.offAllNamed(Routes.rak);
+            break;
+          default:
+            Get.offAllNamed(Routes.home, arguments: {'tab': 3});
+        }
+      },
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'Stok'),
+        BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
+        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profil'),
+      ],
       ),
     );
   }

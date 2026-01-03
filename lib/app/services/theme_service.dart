@@ -3,31 +3,35 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 class ThemeService {
-  final Rx<ThemeMode> themeMode = ThemeMode.light.obs;
+  static const _storageKey = 'theme_mode';
   final _box = GetStorage();
 
+  final Rx<ThemeMode> themeMode = ThemeMode.light.obs;
+
   ThemeService() {
-    final saved = _box.read<String>('theme_mode');
-    if (saved == 'dark') {
-      themeMode.value = ThemeMode.dark;
-    } else if (saved == 'light') {
-      themeMode.value = ThemeMode.light;
-    }
+    themeMode.value = _loadThemeFromBox();
+  }
+
+  ThemeMode _loadThemeFromBox() {
+    // Force light mode regardless of stored value to disable dark mode app-wide.
+    return ThemeMode.light;
   }
 
   ThemeData get lightTheme {
     const seed = Color(0xff06b47c);
     final base = ThemeData.light(useMaterial3: false);
+    final textBase = ThemeData.light(useMaterial3: false).textTheme;
+    final textTheme = textBase.apply(
+      bodyColor: Colors.black87,
+      displayColor: Colors.black87,
+    );
     final scheme = ColorScheme.fromSeed(seedColor: seed);
     return base.copyWith(
       primaryColor: seed,
       scaffoldBackgroundColor: const Color(0xfff6f7fb),
       colorScheme: scheme,
       cardColor: Colors.white,
-      textTheme: base.textTheme.apply(
-        bodyColor: Colors.black87,
-        displayColor: Colors.black87,
-      ),
+      textTheme: textTheme,
     );
   }
 
@@ -36,6 +40,11 @@ class ThemeService {
     const surface = Color(0xff161a21);
     const background = Color(0xff0f1116);
     final base = ThemeData.dark(useMaterial3: false);
+    final textBase = ThemeData.light(useMaterial3: false).textTheme;
+    final textTheme = textBase.apply(
+      bodyColor: const Color(0xffe8ecf2),
+      displayColor: const Color(0xffe8ecf2),
+    );
     final scheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: Brightness.dark,
@@ -46,10 +55,7 @@ class ThemeService {
       scaffoldBackgroundColor: background,
       cardColor: surface,
       colorScheme: scheme,
-      textTheme: base.textTheme.apply(
-        bodyColor: const Color(0xffe8ecf2),
-        displayColor: const Color(0xffe8ecf2),
-      ),
+      textTheme: textTheme,
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xff1c212a),
@@ -91,13 +97,12 @@ class ThemeService {
   }
 
   void setMode(ThemeMode mode) {
-    themeMode.value = mode;
-    _box.write('theme_mode', mode == ThemeMode.light ? 'light' : 'dark');
+    // Dark mode disabled; always stick to light.
+    themeMode.value = ThemeMode.light;
+    _box.write(_storageKey, 'light');
   }
 
   void toggle() {
-    themeMode.value =
-        themeMode.value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    _box.write('theme_mode', themeMode.value == ThemeMode.light ? 'light' : 'dark');
+    setMode(themeMode.value == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark);
   }
 }

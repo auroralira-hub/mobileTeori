@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:apotek/app/core/lang.dart';
 import 'package:apotek/app/routes/app_pages.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../controllers/scan_barcode_controller.dart';
@@ -368,15 +369,15 @@ class _BottomNav extends StatelessWidget {
             Get.offAllNamed(Routes.rak);
             break;
           case 3:
-            Get.offAllNamed(Routes.lainnya);
+            Get.offAllNamed(Routes.home, arguments: {'tab': 3});
             break;
         }
       },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Stok'),
-        BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-        BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'Lainnya'),
+      items: [
+        BottomNavigationBarItem(icon: const Icon(Icons.home), label: Lang.navHome()),
+        BottomNavigationBarItem(icon: const Icon(Icons.inventory_2), label: Lang.navStock()),
+        BottomNavigationBarItem(icon: const Icon(Icons.grid_view), label: Lang.navRack()),
+        BottomNavigationBarItem(icon: const Icon(Icons.person_outline), label: Lang.navProfile()),
       ],
     );
   }

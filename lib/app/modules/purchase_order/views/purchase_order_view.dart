@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../../../core/lang.dart';
+import '../../../routes/app_pages.dart';
 import '../controllers/purchase_order_controller.dart';
 
 class PurchaseOrderView extends GetView<PurchaseOrderController> {
@@ -152,30 +155,30 @@ class PurchaseOrderView extends GetView<PurchaseOrderController> {
         unselectedItemColor: Colors.grey,
         currentIndex: 3,
         onTap: (index) {
-          switch (index) {
-            case 0:
-              Get.offAllNamed('/home');
-              break;
-            case 1:
-              Get.offAllNamed('/stok');
-              break;
-            case 2:
-              Get.offAllNamed('/rak');
-              break;
-            case 3:
-              // Sudah di Lainnya
-              break;
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Stok'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            label: 'Lainnya',
-          ),
-        ],
+        switch (index) {
+          case 0:
+            Get.offAllNamed(Routes.home);
+            break;
+          case 1:
+            Get.offAllNamed(Routes.stok);
+            break;
+          case 2:
+            Get.offAllNamed(Routes.rak);
+            break;
+          case 3:
+            Get.offAllNamed(Routes.home, arguments: {'tab': 3});
+            break;
+        }
+      },
+      items: [
+        BottomNavigationBarItem(icon: const Icon(Icons.home), label: Lang.navHome()),
+        BottomNavigationBarItem(icon: const Icon(Icons.inventory_2), label: Lang.navStock()),
+        BottomNavigationBarItem(icon: const Icon(Icons.grid_view), label: Lang.navRack()),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.person_outline),
+          label: Lang.navProfile(),
+        ),
+      ],
       ),
     );
   }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/lang.dart';
+import '../../../routes/app_pages.dart';
+
 class RakView extends StatefulWidget {
   const RakView({super.key});
   @override
@@ -302,25 +305,25 @@ class _RakViewState extends State<RakView> {
         onTap: (index) {
           switch (index) {
             case 0:
-              Get.offAllNamed('/home');
+              Get.offAllNamed(Routes.home);
               break;
             case 1:
-              Get.offAllNamed('/stok');
+              Get.offAllNamed(Routes.stok);
               break;
             case 2:
               break;
             case 3:
-              Get.offAllNamed('/lainnya');
+              Get.offAllNamed(Routes.home, arguments: {'tab': 3});
               break;
           }
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Stok'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.home), label: Lang.navHome()),
+          BottomNavigationBarItem(icon: const Icon(Icons.inventory_2), label: Lang.navStock()),
+          BottomNavigationBarItem(icon: const Icon(Icons.grid_view), label: Lang.navRack()),
           BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            label: 'Lainnya',
+            icon: const Icon(Icons.person_outline),
+            label: Lang.navProfile(),
           ),
         ],
       ),

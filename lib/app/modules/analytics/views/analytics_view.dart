@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/lang.dart';
 import '../../../routes/app_pages.dart';
 import '../controllers/analytics_controller.dart';
 
@@ -136,14 +137,14 @@ class AnalyticsView extends GetView<AnalyticsController> {
               Get.offAllNamed(Routes.rak);
               break;
             default:
-              Get.offAllNamed(Routes.lainnya);
+              Get.offAllNamed(Routes.home, arguments: {'tab': 3});
           }
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'Stok'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'Lainnya'),
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), label: Lang.navHome()),
+          BottomNavigationBarItem(icon: const Icon(Icons.inventory_2_outlined), label: Lang.navStock()),
+          BottomNavigationBarItem(icon: const Icon(Icons.grid_view), label: Lang.navRack()),
+          BottomNavigationBarItem(icon: const Icon(Icons.person_outline), label: Lang.navProfile()),
         ],
       ),
     );

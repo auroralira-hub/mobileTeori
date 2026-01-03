@@ -10,8 +10,6 @@ class LainnyaView extends GetView<LainnyaController> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final bg = theme.scaffoldBackgroundColor;
-    final cardColor = theme.cardColor;
-    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black87;
     final stats = const [
       _StatData(label: 'Total Obat', value: '248'),
       _StatData(label: 'Perlu Perhatian', value: '12'),
@@ -85,13 +83,6 @@ class LainnyaView extends GetView<LainnyaController> {
               const SizedBox(height: 16),
               const _SectionTitle('Pengaturan'),
               ...settingsMenus.map((item) => _MenuTile(data: item)),
-              const SizedBox(height: 16),
-              const _SectionTitle('Tampilan'),
-              Obx(() => _ThemeToggle(
-                    value: controller.isDark,
-                    onChanged: controller.toggleTheme,
-                  )),
-              const SizedBox(height: 20),
               _LogoutButton(onTap: () => Get.offAllNamed(Routes.login)),
               const SizedBox(height: 12),
               const Center(
@@ -128,7 +119,7 @@ class _HeaderCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.zero,
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -287,50 +278,6 @@ class _MenuTile extends StatelessWidget {
   }
 }
 
-class _ThemeToggle extends StatelessWidget {
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  const _ThemeToggle({required this.value, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xfffff1d4),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(8),
-            child: const Icon(Icons.wb_sunny, color: Colors.orange),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              'Mode Terang',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-          Switch(value: value, onChanged: onChanged),
-        ],
-      ),
-    );
-  }
-}
-
 class _LogoutButton extends StatelessWidget {
   final VoidCallback onTap;
   const _LogoutButton({required this.onTap});
@@ -377,6 +324,7 @@ class _BottomNav extends StatelessWidget {
             Get.offAllNamed(Routes.rak);
             break;
           case 3:
+            Get.offAllNamed(Routes.home, arguments: {'tab': 3});
             break;
         }
       },
@@ -384,7 +332,7 @@ class _BottomNav extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Stok'),
         BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Rak'),
-        BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'Lainnya'),
+        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profil'),
       ],
     );
   }
