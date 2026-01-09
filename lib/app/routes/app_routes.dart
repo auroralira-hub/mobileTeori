@@ -23,7 +23,7 @@ abstract class Routes {
   static const scanBarcode = _Paths.scanBarcode;
   static const kasir = _Paths.kasir;
   static const posHistory = _Paths.posHistory;
-  static const antrian = _Paths.antrian;
+  static const medRequests = _Paths.medRequests;
 }
 
 abstract class _Paths {
@@ -49,5 +49,5 @@ abstract class _Paths {
   static const scanBarcode = '/scan-barcode';
   static const kasir = '/kasir';
   static const posHistory = '/pos-history';
-  static const antrian = '/antrian';
+  static const medRequests = '/med-requests';
 }

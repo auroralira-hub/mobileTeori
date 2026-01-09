@@ -76,7 +76,14 @@ class LainnyaView extends GetView<LainnyaController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _HeaderCard(stats: stats),
+              Obx(
+                () => _HeaderCard(
+                  stats: stats,
+                  name: controller.userName.value,
+                  roleLabel: controller.roleLabel.value,
+                  sipa: controller.sipa.value,
+                ),
+              ),
               const SizedBox(height: 20),
               const _SectionTitle('Manajemen'),
               ...managementMenus.map((item) => _MenuTile(data: item)),
@@ -87,7 +94,7 @@ class LainnyaView extends GetView<LainnyaController> {
               const SizedBox(height: 12),
               const Center(
                 child: Text(
-                  'ApotekCare v1.0.0',
+                  'Apotek Aafiyah v1.0.0',
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
@@ -108,7 +115,15 @@ class LainnyaView extends GetView<LainnyaController> {
 
 class _HeaderCard extends StatelessWidget {
   final List<_StatData> stats;
-  const _HeaderCard({required this.stats});
+  final String name;
+  final String roleLabel;
+  final String sipa;
+  const _HeaderCard({
+    required this.stats,
+    required this.name,
+    required this.roleLabel,
+    required this.sipa,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -152,25 +167,25 @@ class _HeaderCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'atrok',
-                      style: TextStyle(
+                      name,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
                     ),
                     Text(
-                      'Apoteker Penanggung Jawab',
-                      style: TextStyle(color: Colors.white70),
+                      roleLabel,
+                      style: const TextStyle(color: Colors.white70),
                     ),
                     Text(
-                      'SIPA: 1766015507031/APT/2025',
-                      style: TextStyle(color: Colors.white70),
+                      'SIPA: $sipa',
+                      style: const TextStyle(color: Colors.white70),
                     ),
                   ],
                 ),

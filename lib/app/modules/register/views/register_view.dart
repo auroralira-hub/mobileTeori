@@ -73,7 +73,7 @@ class RegisterView extends GetView<RegisterController> {
                           _HeroLogo(accent: accent),
                           const SizedBox(height: 20),
                           Text(
-                            'ApotekCare',
+                            'Apotek Aafiyah',
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                               color: accent,

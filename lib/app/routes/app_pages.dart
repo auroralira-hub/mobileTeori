@@ -38,8 +38,8 @@ import '../modules/kasir/bindings/kasir_binding.dart';
 import '../modules/kasir/views/kasir_view.dart';
 import '../modules/pos_history/bindings/pos_history_binding.dart';
 import '../modules/pos_history/views/pos_history_view.dart';
-import '../modules/antrian/bindings/antrian_binding.dart';
-import '../modules/antrian/views/antrian_view.dart';
+import '../modules/med_requests/bindings/med_request_binding.dart';
+import '../modules/med_requests/views/med_request_view.dart';
 
 part 'app_routes.dart';
 
@@ -80,9 +80,9 @@ class AppPages {
       binding: PosHistoryBinding(),
     ),
     GetPage(
-      name: Routes.antrian,
-      page: () => const AntrianView(),
-      binding: AntrianBinding(),
+      name: Routes.medRequests,
+      page: () => const MedRequestView(),
+      binding: MedRequestBinding(),
     ),
     GetPage(
       name: Routes.home,

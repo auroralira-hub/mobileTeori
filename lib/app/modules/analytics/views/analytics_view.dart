@@ -184,7 +184,7 @@ class _Header extends StatelessWidget {
             children: const [
               Text('Laporan & Analitik', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
               SizedBox(height: 2),
-              Text('Dashboard insight apotek', style: TextStyle(color: Colors.white70)),
+              Text('Dashboard insight Apotek Aafiyah', style: TextStyle(color: Colors.white70)),
             ],
           ),
           IconButton(

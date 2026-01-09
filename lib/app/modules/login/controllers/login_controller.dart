@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../services/auth_service.dart';
 import '../../../routes/app_pages.dart';
 
@@ -10,8 +11,8 @@ class LoginController extends GetxController {
   final resetEmailController = TextEditingController();
   final obscurePassword = true.obs;
   final errorMessage = ''.obs;
+  final isSubmitting = false.obs;
   final selectedRole = 'Apoteker'.obs;
-  final RxnString lockedRole = RxnString();
   String? _lastPrefillSignature;
 
   void togglePasswordVisibility() {
@@ -19,15 +20,6 @@ class LoginController extends GetxController {
   }
 
   void selectRole(String role) {
-    final locked = lockedRole.value;
-    if (locked != null && locked != role.toLowerCase()) {
-      Get.snackbar(
-        'Role terkunci',
-        'Gunakan role $locked sesuai saat registrasi.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
     selectedRole.value = role;
   }
 
@@ -37,28 +29,39 @@ class LoginController extends GetxController {
     final args = Get.arguments;
     if (args is Map) {
       _prefillFromArgs(args);
-    } else if (authService.lastUsername != null) {
-      usernameController.text = authService.lastUsername!;
-      if (authService.lastRole != null) {
-        selectedRole.value = _titleCase(authService.lastRole!);
-      }
     }
   }
 
-  void login() {
+  Future<void> login() async {
+    if (isSubmitting.value) return;
     final username = usernameController.text.trim();
     final password = passwordController.text;
     final role = selectedRole.value;
-    final matchedRole = authService.validate(username, password, role);
-    if (matchedRole == null) {
-      errorMessage.value = 'Username, password, atau role tidak sesuai';
+    if (username.isEmpty) {
+      errorMessage.value = 'Email atau username wajib diisi';
+      return;
+    }
+    if (password.isEmpty) {
+      errorMessage.value = 'Password wajib diisi';
       return;
     }
     errorMessage.value = '';
-    Get.offAllNamed(Routes.home, arguments: {
-      'name': username,
-      'role': matchedRole,
-    });
+    isSubmitting.value = true;
+    try {
+      final profile = await authService.signIn(
+        identifier: username,
+        password: password,
+        selectedRole: role,
+      );
+      Get.offAllNamed(Routes.home, arguments: {
+        'name': profile.username ?? profile.email,
+        'role': profile.role,
+      });
+    } catch (error) {
+      errorMessage.value = _readableError(error);
+    } finally {
+      isSubmitting.value = false;
+    }
   }
 
   void forgotPassword() {
@@ -132,6 +135,10 @@ class LoginController extends GetxController {
   }
 
   void _prefillFromArgs(Map args) {
+    if (args['clearPrefill'] == true) {
+      clearPrefill();
+      return;
+    }
     final argUser = args['username'];
     final argRole = args['role'];
     final signature = '${argUser ?? ''}|${argRole ?? ''}';
@@ -141,12 +148,16 @@ class LoginController extends GetxController {
       usernameController.text = argUser.trim();
     }
     if (argRole is String && argRole.trim().isNotEmpty) {
-      lockedRole.value = argRole.toString().toLowerCase();
       selectedRole.value = _titleCase(argRole);
     } else {
-      lockedRole.value = null;
       selectedRole.value = 'Apoteker';
     }
+    errorMessage.value = '';
+  }
+
+  void clearPrefill() {
+    usernameController.clear();
+    selectedRole.value = 'Apoteker';
     errorMessage.value = '';
   }
 
@@ -169,5 +180,12 @@ class LoginController extends GetxController {
           : 'Akun "$target" diproses, cek email terdaftar (simulasi).',
       snackPosition: SnackPosition.BOTTOM,
     );
+  }
+
+  String _readableError(Object error) {
+    if (error is AuthException) {
+      return error.message;
+    }
+    return 'Login gagal. Silakan coba lagi.';
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../../../routes/app_pages.dart';
 import '../controllers/kasir_controller.dart';
@@ -16,7 +17,20 @@ class KasirView extends GetView<KasirController> {
       body: SafeArea(
         child: Column(
           children: [
-            _KasirHeader(onBack: Get.back, accent: accent),
+            Obx(
+              () {
+                final now = controller.now.value;
+                final dateLabel = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(now);
+                final timeLabel = DateFormat('HH.mm.ss').format(now);
+                return _KasirHeader(
+                  onBack: Get.back,
+                  accent: accent,
+                  cashierName: controller.cashierName.value,
+                  dateLabel: dateLabel,
+                  timeLabel: timeLabel,
+                );
+              },
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
               child: Row(
@@ -44,7 +58,9 @@ class KasirView extends GetView<KasirController> {
                           ),
                           Expanded(
                             child: TextField(
-                              onChanged: controller.onSearchChanged,
+                              onChanged: controller.onSearchInputChanged,
+                              onSubmitted: (_) => controller.searchMedicines(),
+                              onTap: controller.searchMedicines,
                               decoration: const InputDecoration(
                                 hintText: 'Scan barcode atau ketik manual',
                                 border: InputBorder.none,
@@ -59,7 +75,7 @@ class KasirView extends GetView<KasirController> {
                   SizedBox(
                     height: 48,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: controller.searchMedicines,
                       icon: const Icon(Icons.search),
                       label: const Text('Cari'),
                       style: ElevatedButton.styleFrom(
@@ -73,23 +89,114 @@ class KasirView extends GetView<KasirController> {
               ),
             ),
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey),
-                    SizedBox(height: 10),
-                    Text(
-                      'Keranjang kosong',
-                      style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w700),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Scan barcode untuk menambah produk',
-                      style: TextStyle(color: Colors.black45),
-                    ),
-                  ],
-                ),
+              child: Obx(
+                () {
+                  final results = controller.searchResults;
+                  final cartItems = controller.cartItems;
+                  return ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    children: [
+                      if (controller.isSearching.value)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      if (results.isNotEmpty) ...[
+                        const Text(
+                          'Hasil Pencarian',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 8),
+                        ...results.map(
+                          (item) => Card(
+                            elevation: 1,
+                            margin: const EdgeInsets.only(bottom: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            child: ListTile(
+                              title: Text(item.name),
+                              subtitle: Text('Rak ${item.rackCode} • Stok ${item.stock} • Harga ${item.price}'),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.add_circle_outline, color: Color(0xff06b47c)),
+                                onPressed: () => controller.addToCart(item),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      const Text(
+                        'Keranjang',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 8),
+                      if (cartItems.isEmpty)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: Text('Keranjang masih kosong'),
+                          ),
+                        )
+                      else ...[
+                        ...cartItems.map(
+                          (item) => Card(
+                            elevation: 1,
+                            margin: const EdgeInsets.only(bottom: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            child: ListTile(
+                              title: Text(item.name),
+                              subtitle: Text('Harga: ${item.unitPrice} • Total: ${item.lineTotal}'),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.remove_circle_outline),
+                                    onPressed: () => controller.decreaseQty(item),
+                                  ),
+                                  Obx(() => Text('${item.qty.value}')),
+                                  IconButton(
+                                    icon: const Icon(Icons.add_circle_outline),
+                                    onPressed: () => controller.increaseQty(item),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Total', style: TextStyle(fontWeight: FontWeight.w700)),
+                            Text(
+                              '${controller.totalAmount}',
+                              style: const TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: controller.isSubmitting.value
+                                ? null
+                                : () => _showPaymentDialog(context, controller),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xff06b47c),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: Obx(
+                              () => Text(
+                                controller.isSubmitting.value ? 'Memproses...' : 'Bayar',
+                                style: const TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
               ),
             ),
           ],
@@ -126,11 +233,58 @@ class KasirView extends GetView<KasirController> {
   }
 }
 
+Future<void> _showPaymentDialog(BuildContext context, KasirController controller) async {
+  await showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Metode Pembayaran'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.payments_outlined),
+            title: const Text('Tunai'),
+            onTap: () {
+              Get.back();
+              controller.checkout(paymentMethod: 'cash');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.qr_code),
+            title: const Text('QRIS'),
+            onTap: () {
+              Get.back();
+              controller.checkout(paymentMethod: 'qris');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.account_balance_outlined),
+            title: const Text('Transfer'),
+            onTap: () {
+              Get.back();
+              controller.checkout(paymentMethod: 'transfer');
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class _KasirHeader extends StatelessWidget {
   final VoidCallback onBack;
   final Color accent;
+  final String cashierName;
+  final String dateLabel;
+  final String timeLabel;
 
-  const _KasirHeader({required this.onBack, required this.accent});
+  const _KasirHeader({
+    required this.onBack,
+    required this.accent,
+    required this.cashierName,
+    required this.dateLabel,
+    required this.timeLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -172,22 +326,22 @@ class _KasirHeader extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Row(
-            children: const [
-              Icon(Icons.person, color: Colors.white70, size: 16),
-              SizedBox(width: 6),
-              Text('Kasir: Apt. Budi Santoso, S.Farm', style: TextStyle(color: Colors.white70)),
+            children: [
+              const Icon(Icons.person, color: Colors.white70, size: 16),
+              const SizedBox(width: 6),
+              Text('Kasir: $cashierName', style: const TextStyle(color: Colors.white70)),
             ],
           ),
           const SizedBox(height: 6),
           Row(
-            children: const [
-              Icon(Icons.event, color: Colors.white70, size: 16),
-              SizedBox(width: 6),
-              Text('Minggu, 28 Desember 2025', style: TextStyle(color: Colors.white70)),
-              SizedBox(width: 12),
-              Icon(Icons.access_time, color: Colors.white70, size: 16),
-              SizedBox(width: 6),
-              Text('06.03.18', style: TextStyle(color: Colors.white70)),
+            children: [
+              const Icon(Icons.event, color: Colors.white70, size: 16),
+              const SizedBox(width: 6),
+              Text(dateLabel, style: const TextStyle(color: Colors.white70)),
+              const SizedBox(width: 12),
+              const Icon(Icons.access_time, color: Colors.white70, size: 16),
+              const SizedBox(width: 6),
+              Text(timeLabel, style: const TextStyle(color: Colors.white70)),
             ],
           ),
         ],

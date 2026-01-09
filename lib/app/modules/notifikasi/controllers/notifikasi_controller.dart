@@ -42,7 +42,7 @@ class NotifikasiController extends GetxController {
       ),
       NotificationModel(
         title: 'Info: Update Sistem',
-        description: 'Aplikasi apotek telah diperbarui ke versi terbaru.',
+        description: 'Aplikasi Apotek Aafiyah telah diperbarui ke versi terbaru.',
         timestamp: DateTime.now().subtract(const Duration(days: 1)),
         type: NotifType.info,
         unread: false,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../routes/app_pages.dart';
 import '../controllers/home_controller.dart';
@@ -70,7 +71,7 @@ class HomeView extends GetView<HomeController> {
       switch (controller.currentTab.value) {
         case 0:
           body = isKaryawan
-              ? _KaryawanHomeTab(accent: accent, userName: userName, strings: strings)
+              ? _KaryawanHomeTab(accent: accent, userName: userName, strings: strings, controller: controller)
               : _ApotekerHomeTab(accent: accent, userName: userName, strings: strings);
           break;
         case 1:
@@ -188,7 +189,6 @@ class _Strings {
   String get featured => en ? 'Highlighted' : 'Fitur Unggulan';
   String get expSoon => en ? 'Expiring Soon' : 'Hampir Kadaluarsa';
   String get posHistory => en ? 'POS History' : 'Riwayat POS';
-  String get transactionQueue => en ? 'Transaction Queue' : 'Antrian Transaksi';
   String get reportsAnalytics => en ? 'Reports & Analytics' : 'Laporan & Analitik';
   String get addNewMed => en ? 'Add New Medicine' : 'Tambah Obat Baru';
   String get openPos => en ? 'Open POS' : 'Buka Kasir (POS)';
@@ -207,7 +207,6 @@ class _Strings {
   String get items => en ? 'items' : 'item';
   String get stockUpdates => en ? 'Stock Updates' : 'Update Stok';
   String get updates => en ? 'updates' : 'update';
-  String get viewQueue => en ? 'View Transaction Queue' : 'Lihat Antrian Transaksi';
   String get karyawanTasks => en ? 'Staff Tasks:' : 'Tugas Karyawan:';
   String get kTask1 => en ? 'Pick meds from rack per transaction' : 'Mengambil obat dari rak sesuai transaksi';
   String get kTask2 => en ? 'Prepare compounded medicines' : 'Menyiapkan racikan obat';
@@ -221,7 +220,7 @@ class _Strings {
   String get patientData => en ? 'Patient Data' : 'Data Pasien';
   String get shiftMgmt => en ? 'Shift Management' : 'Manajemen Shift';
   String get dailyReport => en ? 'Daily Report' : 'Laporan Harian';
-  String get versionLabel => en ? 'ApotekCare v1.0.0' : 'ApotekCare v1.0.0';
+  String get versionLabel => en ? 'Apotek Aafiyah v1.0.0' : 'Apotek Aafiyah v1.0.0';
   String get stockManageTitle => en ? 'Stock Management' : 'Kelola Stok';
   String get stockSearchHint => en ? 'Search medicines, categories, or rack location...' : 'Cari obat, kategori, atau lokasi rak...';
   String get rackTitle => en ? 'Medicine Rack Map' : 'Peta Rak Obat';
@@ -254,6 +253,50 @@ class _ApotekerShell extends StatelessWidget {
   }
 }
 
+void _showQuickMenu(BuildContext context) {
+  Get.bottomSheet(
+    SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline),
+              title: const Text('Tambah Obat'),
+              onTap: () {
+                Get.back();
+                Get.toNamed(Routes.addEditMedicine);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code_scanner),
+              title: const Text('Scan Barcode'),
+              onTap: () {
+                Get.back();
+                Get.toNamed(Routes.scanBarcode);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.more_horiz),
+              title: const Text('Lainnya'),
+              onTap: () {
+                Get.back();
+                Get.toNamed(Routes.lainnya);
+              },
+            ),
+          ],
+        ),
+      ),
+    ),
+    backgroundColor: Colors.transparent,
+  );
+}
+
 class _ApotekerHeader extends StatelessWidget {
   final String userName;
   final _Strings strings;
@@ -284,7 +327,10 @@ class _ApotekerHeader extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.add, color: Colors.white),
+                child: GestureDetector(
+                  onTap: () => Get.toNamed(Routes.addEditMedicine),
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
               ),
               const SizedBox(width: 12),
               Column(
@@ -338,7 +384,10 @@ class _ApotekerHeader extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.more_vert, color: Colors.white),
+                child: GestureDetector(
+                  onTap: () => _showQuickMenu(context),
+                  child: const Icon(Icons.more_vert, color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -428,9 +477,9 @@ class _ApotekerHomeTab extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed: () => Get.toNamed(Routes.antrian),
-                        icon: const Icon(Icons.list_alt),
-                        label: Text(strings.transactionQueue),
+                        onPressed: () => Get.toNamed(Routes.medRequests, arguments: {'role': 'apoteker'}),
+                        icon: const Icon(Icons.medication_outlined),
+                        label: const Text('Permintaan Obat'),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: accent),
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -505,8 +554,14 @@ class _KaryawanHomeTab extends StatelessWidget {
   final Color accent;
   final String userName;
   final _Strings strings;
+  final HomeController controller;
 
-  const _KaryawanHomeTab({required this.accent, required this.userName, required this.strings});
+  const _KaryawanHomeTab({
+    required this.accent,
+    required this.userName,
+    required this.strings,
+    required this.controller,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -533,13 +588,16 @@ class _KaryawanHomeTab extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
-                              shape: BoxShape.circle,
+                          GestureDetector(
+                            onTap: () => Get.toNamed(Routes.addEditMedicine),
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.12),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.add, color: Colors.white),
                             ),
-                            child: const Icon(Icons.add, color: Colors.white),
                           ),
                           const SizedBox(width: 12),
                           Column(
@@ -570,37 +628,47 @@ class _KaryawanHomeTab extends StatelessWidget {
                         children: [
                           GestureDetector(
                             onTap: () => Get.toNamed(Routes.notifikasi),
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(9),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.14),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.notifications_none, color: Colors.white),
-                                ),
-                                Positioned(
-                                  right: -1,
-                                  top: -2,
-                                  child: Container(
-                                    height: 18,
-                                    width: 18,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xffde4242),
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(color: Colors.white, width: 1.4),
-                                    ),
-                                    child: const Center(
-                                      child: Text(
-                                        '2',
-                                        style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                            child: Obx(
+                              () {
+                                final count = controller.pendingRequestsCount.value;
+                                return Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(9),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.14),
+                                        shape: BoxShape.circle,
                                       ),
+                                      child: const Icon(Icons.notifications_none, color: Colors.white),
                                     ),
-                                  ),
-                                ),
-                              ],
+                                    if (count > 0)
+                                      Positioned(
+                                        right: -1,
+                                        top: -2,
+                                        child: Container(
+                                          height: 18,
+                                          width: 18,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xffde4242),
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(color: Colors.white, width: 1.4),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              count > 9 ? '9+' : '$count',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -644,6 +712,24 @@ class _KaryawanHomeTab extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => Get.toNamed(Routes.medRequests, arguments: {'role': 'karyawan'}),
+                      icon: const Icon(Icons.medication_outlined),
+                      label: const Text('Permintaan Obat dari Apoteker'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 26),
@@ -652,41 +738,43 @@ class _KaryawanHomeTab extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _GlassGrid(
-                    children: [
-                      _KaryawanTaskCard(
-                        title: strings.en ? 'Waiting Pickup' : 'Menunggu Diambil',
-                        value: '1',
-                        subtitle: strings.en ? 'New task' : 'Tugas baru',
-                        icon: Icons.timelapse,
-                        color: const Color(0xffe6a927),
-                        bgColor: const Color(0xfffff6e5),
-                      ),
-                      _KaryawanTaskCard(
-                        title: strings.en ? 'Ready to Pay' : 'Siap Dibayar',
-                        value: '1',
-                        subtitle: strings.en ? 'Waiting cashier' : 'Menunggu kasir',
-                        icon: Icons.verified_outlined,
-                        color: const Color(0xff1eb978),
-                        bgColor: const Color(0xffe9f8f1),
-                      ),
-                      _KaryawanTaskCard(
-                        title: strings.en ? 'Stock Alert' : 'Alert Stok',
-                        value: '2',
-                        subtitle: strings.en ? 'Need attention' : 'Perlu perhatian',
-                        icon: Icons.error_outline,
-                        color: const Color(0xffd64545),
-                        bgColor: const Color(0xffffefef),
-                      ),
-                      _KaryawanTaskCard(
-                        title: strings.en ? 'Done Today' : 'Selesai Hari Ini',
-                        value: '12',
-                        subtitle: strings.en ? 'Tasks completed' : 'Tugas selesai',
-                        icon: Icons.widgets_outlined,
-                        color: const Color(0xff3f7fea),
-                        bgColor: const Color(0xffeef3ff),
-                      ),
-                    ],
+                  Obx(
+                    () => _GlassGrid(
+                      children: [
+                        _KaryawanTaskCard(
+                          title: strings.en ? 'Waiting Pickup' : 'Menunggu Diambil',
+                          value: '${controller.pendingRequestsCount.value}',
+                          subtitle: strings.en ? 'New task' : 'Tugas baru',
+                          icon: Icons.timelapse,
+                          color: const Color(0xffe6a927),
+                          bgColor: const Color(0xfffff6e5),
+                        ),
+                        _KaryawanTaskCard(
+                          title: strings.en ? 'Ready to Pay' : 'Siap Dibayar',
+                          value: '1',
+                          subtitle: strings.en ? 'Waiting cashier' : 'Menunggu kasir',
+                          icon: Icons.verified_outlined,
+                          color: const Color(0xff1eb978),
+                          bgColor: const Color(0xffe9f8f1),
+                        ),
+                        _KaryawanTaskCard(
+                          title: strings.en ? 'Stock Alert' : 'Alert Stok',
+                          value: '2',
+                          subtitle: strings.en ? 'Need attention' : 'Perlu perhatian',
+                          icon: Icons.error_outline,
+                          color: const Color(0xffd64545),
+                          bgColor: const Color(0xffffefef),
+                        ),
+                        _KaryawanTaskCard(
+                          title: strings.en ? 'Done Today' : 'Selesai Hari Ini',
+                          value: '12',
+                          subtitle: strings.en ? 'Tasks completed' : 'Tugas selesai',
+                          icon: Icons.widgets_outlined,
+                          color: const Color(0xff3f7fea),
+                          bgColor: const Color(0xffeef3ff),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 18),
                   Text(strings.en ? 'Today\'s Performance' : 'Kinerja Hari Ini',
@@ -732,42 +820,46 @@ class _KaryawanHomeTab extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: accent,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.receipt_long, color: Colors.white),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            strings.viewQueue,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => Get.toNamed(Routes.posHistory),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: accent,
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(18),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.receipt_long, color: Colors.white),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              strings.posHistory,
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                            ),
                           ),
-                          child: Text(
-                            strings.en ? '1 waiting' : '1 menunggu',
-                            style: TextStyle(color: accent, fontWeight: FontWeight.w700),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Text(
+                              strings.en ? 'View' : 'Lihat',
+                              style: TextStyle(color: accent, fontWeight: FontWeight.w700),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -1288,9 +1380,29 @@ class _StockItem {
     required this.iconColor,
     this.isExpired = false,
   });
+
+  _StockItem copyWith({
+    String? qtyLabel,
+    String? location,
+  }) {
+    return _StockItem(
+      name: name,
+      category: category,
+      qtyLabel: qtyLabel ?? this.qtyLabel,
+      location: location ?? this.location,
+      batch: batch,
+      expiry: expiry,
+      status: status,
+      statusColor: statusColor,
+      icon: icon,
+      iconBg: iconBg,
+      iconColor: iconColor,
+      isExpired: isExpired,
+    );
+  }
 }
 
-class _StockTab extends StatelessWidget {
+class _StockTab extends StatefulWidget {
   final Color accent;
   final List<_StockItem> stockItems;
   final bool withSafeArea;
@@ -1304,7 +1416,114 @@ class _StockTab extends StatelessWidget {
   });
 
   @override
+  State<_StockTab> createState() => _StockTabState();
+}
+
+class _StockTabState extends State<_StockTab> {
+  late List<_StockItem> items;
+  final searchController = TextEditingController();
+  String searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    items = List<_StockItem>.from(widget.stockItems);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  bool _matchesQuery(_StockItem item) {
+    if (searchQuery.isEmpty) {
+      return true;
+    }
+    final needle = searchQuery.toLowerCase();
+    final haystack = [
+      item.name,
+      item.category,
+      item.location,
+      item.batch,
+      item.qtyLabel,
+    ].join(' ').toLowerCase();
+    return haystack.contains(needle);
+  }
+
+  void _showAddStockDialog(int index) {
+    final controller = TextEditingController();
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tambah Stok'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(hintText: 'Jumlah tambahan'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Batal')),
+          ElevatedButton(
+            onPressed: () {
+              final raw = controller.text.trim();
+              final addQty = int.tryParse(raw) ?? 0;
+              if (addQty <= 0) {
+                Get.snackbar('Input tidak valid', 'Masukkan angka yang benar.');
+                return;
+              }
+              final current = items[index].qtyLabel;
+              final match = RegExp(r'^(\d+)\s*(.*)$').firstMatch(current);
+              final currentQty = match == null ? 0 : int.tryParse(match.group(1)!) ?? 0;
+              final unit = match == null ? '' : match.group(2)!.trim();
+              final nextQty = currentQty + addQty;
+              final nextLabel = unit.isEmpty ? '$nextQty' : '$nextQty $unit';
+              setState(() {
+                items[index] = items[index].copyWith(qtyLabel: nextLabel);
+              });
+              Get.back();
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUpdateLocationDialog(int index) {
+    final controller = TextEditingController(text: items[index].location);
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Update Lokasi'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'Contoh: A1'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Batal')),
+          ElevatedButton(
+            onPressed: () {
+              final nextLocation = controller.text.trim();
+              if (nextLocation.isEmpty) {
+                Get.snackbar('Input tidak valid', 'Lokasi tidak boleh kosong.');
+                return;
+              }
+              setState(() {
+                items[index] = items[index].copyWith(location: nextLocation);
+              });
+              Get.back();
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final filteredEntries = items.asMap().entries.where((entry) => _matchesQuery(entry.value)).toList();
     final content = SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 30),
       child: Column(
@@ -1342,14 +1561,19 @@ class _StockTab extends StatelessWidget {
                         color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.add, color: Colors.white),
+                      child: GestureDetector(
+                        onTap: () => Get.toNamed(Routes.addEditMedicine),
+                        child: const Icon(Icons.add, color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 14),
                 TextField(
+                  controller: searchController,
                   style: const TextStyle(color: Colors.white),
                   cursorColor: Colors.white,
+                  onChanged: (value) => setState(() => searchQuery = value.trim()),
                   decoration: InputDecoration(
                     hintText: 'Cari obat, kategori, atau lokasi rak...',
                     hintStyle: const TextStyle(color: Colors.white70),
@@ -1389,14 +1613,19 @@ class _StockTab extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                ...stockItems.map(
-                  (item) => Padding(
+                ...filteredEntries.map(
+                  (entry) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: _StockCard(accent: accent, item: item),
+                    child: _StockCard(
+                      accent: widget.accent,
+                      item: entry.value,
+                      onAddStock: () => _showAddStockDialog(entry.key),
+                      onUpdateLocation: () => _showUpdateLocationDialog(entry.key),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                _StockInfoNote(strings: strings),
+                _StockInfoNote(strings: widget.strings),
               ],
             ),
           ),
@@ -1404,7 +1633,7 @@ class _StockTab extends StatelessWidget {
       ),
     );
 
-    return withSafeArea ? SafeArea(child: content) : content;
+    return widget.withSafeArea ? SafeArea(child: content) : content;
   }
 }
 
@@ -1488,8 +1717,15 @@ class _FilterChip extends StatelessWidget {
 class _StockCard extends StatelessWidget {
   final Color accent;
   final _StockItem item;
+  final VoidCallback onAddStock;
+  final VoidCallback onUpdateLocation;
 
-  const _StockCard({required this.accent, required this.item});
+  const _StockCard({
+    required this.accent,
+    required this.item,
+    required this.onAddStock,
+    required this.onUpdateLocation,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1586,7 +1822,7 @@ class _StockCard extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: onAddStock,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1599,7 +1835,7 @@ class _StockCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: onUpdateLocation,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1685,7 +1921,7 @@ class _StockInfoNote extends StatelessWidget {
   }
 }
 
-class _RackTab extends StatelessWidget {
+class _RackTab extends StatefulWidget {
   final Color accent;
   final List<int> lockerNumbers;
   final bool withSafeArea;
@@ -1697,137 +1933,320 @@ class _RackTab extends StatelessWidget {
   });
 
   @override
+  State<_RackTab> createState() => _RackTabState();
+}
+
+class _RackTabState extends State<_RackTab> {
+  int selectedRackIndex = 0;
+  int selectedLockerIndex = 0;
+  final SupabaseClient _client = Supabase.instance.client;
+  late List<List<Map<String, dynamic>>> rackData;
+  bool isLoading = true;
+  String? loadError;
+
+  Map<String, dynamic> get currentLocker => rackData[selectedRackIndex][selectedLockerIndex];
+
+  @override
+  void initState() {
+    super.initState();
+    rackData = List.generate(4, (_) => List.generate(12, (_) => _emptyItem()));
+    _fetchRackData();
+  }
+
+  Map<String, dynamic> _emptyItem() {
+    return {
+      'id': null,
+      'name': 'Kosong',
+      'stock': 0,
+      'min': 0,
+      'expiry': '-',
+    };
+  }
+
+  void _fetchRackData() async {
+    setState(() {
+      isLoading = true;
+      loadError = null;
+    });
+    try {
+      final data = await _client.from('medicines').select('id, name, rack_code, stock, expiry_date');
+      final next = List.generate(4, (_) => List.generate(12, (_) => _emptyItem()));
+      for (final row in (data as List)) {
+        final rackCode = (row['rack_code'] ?? '').toString().trim().toUpperCase();
+        if (rackCode.isEmpty) {
+          continue;
+        }
+        final parsed = _parseRackCode(rackCode);
+        if (parsed == null) {
+          continue;
+        }
+        final name = (row['name'] ?? 'Kosong').toString();
+        final stock = row['stock'] is int ? row['stock'] as int : int.tryParse('${row['stock']}') ?? 0;
+        final expiryRaw = row['expiry_date'];
+        final expiry = _formatExpiry(expiryRaw);
+        next[parsed.item1][parsed.item2] = {
+          'id': row['id'],
+          'name': name,
+          'stock': stock,
+          'min': 0,
+          'expiry': expiry,
+        };
+      }
+      setState(() {
+        rackData = next;
+        isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        loadError = error.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  _RackSlot? _parseRackCode(String rackCode) {
+    if (rackCode.isEmpty) return null;
+    final letter = rackCode.substring(0, 1);
+    final numberPart = rackCode.substring(1);
+    final rackIndex = ['A', 'B', 'C', 'D'].indexOf(letter);
+    final slotNumber = int.tryParse(numberPart) ?? 0;
+    if (rackIndex < 0 || slotNumber < 1 || slotNumber > 12) {
+      return null;
+    }
+    return _RackSlot(rackIndex, slotNumber - 1);
+  }
+
+  String _formatExpiry(Object? raw) {
+    if (raw == null) return '-';
+    if (raw is DateTime) {
+      return raw.toIso8601String().split('T').first;
+    }
+    final text = raw.toString();
+    if (text.contains('T')) {
+      return text.split('T').first;
+    }
+    return text;
+  }
+
+  Future<void> _updateExpiryDate() async {
+    final item = currentLocker;
+    final id = item['id'] as String?;
+    if (id == null) {
+      Get.snackbar('Tidak bisa diubah', 'Loker ini kosong.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null) return;
+    try {
+      final dateValue = picked.toIso8601String().split('T').first;
+      await _client.from('medicines').update({'expiry_date': dateValue}).eq('id', id);
+      setState(() {
+        rackData[selectedRackIndex][selectedLockerIndex] = {
+          ...item,
+          'expiry': dateValue,
+        };
+      });
+      Get.snackbar('Sukses', 'Tanggal kadaluarsa diperbarui.', snackPosition: SnackPosition.BOTTOM);
+    } catch (error) {
+      Get.snackbar('Gagal', error.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     const racks = ['Rak A', 'Rak B', 'Rak C', 'Rak D'];
 
     final content = SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 30),
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 20, 18, 24),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xff05b77a), Color(0xff02a867)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Peta Rak Obat',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  'Kelola lokasi penyimpanan obat',
-                  style: TextStyle(color: Colors.white70),
-                ),
-                SizedBox(height: 14),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Pilih Rak', style: TextStyle(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 10),
                 Row(
                   children: racks.map((rack) {
-                    final selected = rack == 'Rak A';
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: _RackChip(label: rack, selected: selected),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    final selected = racks[selectedRackIndex] == rack;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(18),
+                    onTap: () {
+                      setState(() {
+                        selectedRackIndex = racks.indexOf(rack);
+                        selectedLockerIndex = 0;
+                      });
+                    },
+                    child: _RackChip(label: rack, selected: selected),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Layout Loker - Rak A', style: TextStyle(fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 12),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 10,
-                          childAspectRatio: 1,
-                        ),
-                        itemCount: lockerNumbers.length,
-                        itemBuilder: (_, index) {
-                          final number = lockerNumbers[index].toString().padLeft(2, '0');
-                          return _LockerTile(number: number);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: const [
-                      CircleAvatar(
-                        radius: 26,
-                        backgroundColor: Color(0xffe7f7ef),
-                        child: Icon(Icons.location_on_outlined, color: Color(0xff06b47c), size: 26),
-                      ),
-                      SizedBox(height: 10),
-                      Text('Pilih Loker', style: TextStyle(fontWeight: FontWeight.w800)),
-                      SizedBox(height: 6),
-                      Text(
-                        'Klik loker untuk melihat detail',
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                );
+              }).toList(),
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Layout Loker - ${racks[selectedRackIndex]}',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 12),
+                  if (isLoading)
+                    const Center(child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator()))
+                  else if (loadError != null)
+                    Text(loadError!, style: const TextStyle(color: Colors.red))
+                  else
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 10,
+                        crossAxisSpacing: 10,
+                        childAspectRatio: 1,
+                      ),
+                      itemCount: widget.lockerNumbers.length,
+                      itemBuilder: (_, index) {
+                        final number = widget.lockerNumbers[index].toString().padLeft(2, '0');
+                        return _LockerTile(
+                          number: number,
+                          selected: selectedLockerIndex == index,
+                          onTap: () => setState(() => selectedLockerIndex = index),
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffe7f7ef),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.location_on, color: widget.accent),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Loker ${widget.lockerNumbers[selectedLockerIndex].toString().padLeft(2, '0')}',
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            racks[selectedRackIndex],
+                            style: const TextStyle(color: Colors.black54),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text('Nama Obat', style: TextStyle(color: Colors.grey[700])),
+                  Text(
+                    currentLocker['name'],
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Stok', style: TextStyle(color: Colors.black54)),
+                          Text(
+                            '${currentLocker['stock']} pcs',
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text('Kadaluarsa', style: TextStyle(color: Colors.black54)),
+                          Text(
+                            currentLocker['expiry'],
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Min. Stok', style: TextStyle(color: Colors.black54)),
+                      Text(
+                        '${currentLocker['min']} pcs',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _updateExpiryDate,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        side: const BorderSide(color: Color(0xffd9dfe7)),
+                      ),
+                      child: const Text('Ubah Kadaluarsa', style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
 
-    return withSafeArea ? SafeArea(child: content) : content;
+    return widget.withSafeArea ? SafeArea(child: content) : content;
   }
 }
 
@@ -1840,33 +2259,24 @@ class _RackChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: selected ? const Color(0xff06b47c) : const Color(0xfff7f8fb),
+        color: selected ? const Color(0xff4caf50) : Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: selected ? Colors.transparent : const Color(0xffe4e9f0)),
-        boxShadow: selected
-            ? [
-                BoxShadow(
-                  color: const Color(0xff06b47c).withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.tune_rounded, color: selected ? Colors.white : const Color(0xff3f7fea), size: 16),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: selected ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.w700,
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: selected ? Colors.white : Colors.black87,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -1874,33 +2284,53 @@ class _RackChip extends StatelessWidget {
 
 class _LockerTile extends StatelessWidget {
   final String number;
+  final bool selected;
+  final VoidCallback onTap;
 
-  const _LockerTile({required this.number});
+  const _LockerTile({
+    required this.number,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xffe7f7ef),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xff06b47c).withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            number,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              color: Color(0xff06b47c),
+    const accent = Color(0xff06b47c);
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xffcdeecb) : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: selected ? const Color(0xff4caf50) : accent.withValues(alpha: 0.5), width: 1.5),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              number,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: selected ? const Color(0xff2e7d32) : const Color(0xff06b47c),
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          const Icon(Icons.inventory_2_outlined, color: Color(0xff06b47c)),
-        ],
+            const SizedBox(height: 6),
+            Icon(
+              Icons.inventory_2_outlined,
+              color: selected ? const Color(0xff2e7d32) : const Color(0xff06b47c),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+class _RackSlot {
+  final int item1;
+  final int item2;
+  const _RackSlot(this.item1, this.item2);
 }
 
 class _ProfileTab extends StatelessWidget {
@@ -1978,47 +2408,93 @@ class _ProfileTab extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: accent),
-                              color: accent.withValues(alpha: 0.08),
-                            ),
-                            child: Icon(Icons.add, color: accent, size: 28),
+                          Obx(
+                            () {
+                              final avatarUrl = controller.profileAvatarUrl.value;
+                              return GestureDetector(
+                                onTap: controller.pickAndUploadAvatar,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 26,
+                                      backgroundColor: accent.withValues(alpha: 0.08),
+                                      backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                                      child: avatarUrl.isEmpty
+                                          ? Icon(Icons.person_outline, color: accent, size: 28)
+                                          : null,
+                                    ),
+                                    Positioned(
+                                      right: -2,
+                                      bottom: -2,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: accent, width: 1.4),
+                                        ),
+                                        child: Icon(Icons.add, size: 14, color: accent),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  userName,
-                                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                                ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                            _SmallBadge(label: strings.employee, color: const Color(0xff1eb978), bg: const Color(0xffe9f8f1)),
-                            const SizedBox(width: 8),
-                            _SmallBadge(label: strings.morningShift, color: const Color(0xff5c8dff), bg: const Color(0xffe8edff)),
+                            child: Obx(
+                              () => Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    controller.userName.value,
+                                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      _SmallBadge(
+                                        label: controller.role.value,
+                                        color: const Color(0xff1eb978),
+                                        bg: const Color(0xffe9f8f1),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      _SmallBadge(
+                                        label: strings.morningShift,
+                                        color: const Color(0xff5c8dff),
+                                        bg: const Color(0xffe8edff),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Obx(
+                        () => Column(
+                          children: [
+                            _InfoRow(icon: Icons.person_outline, label: strings.username, value: controller.profileUsername.value),
+                            const Divider(),
+                            _InfoRow(icon: Icons.email_outlined, label: strings.email, value: controller.profileEmail.value),
+                            const Divider(),
+                            _InfoRow(icon: Icons.phone_outlined, label: strings.phone, value: controller.profilePhone.value),
+                            const Divider(),
+                            _InfoRow(icon: Icons.calendar_today_outlined, label: strings.joined, value: controller.joinedSince.value),
+                            const Divider(),
+                            _InfoRow(
+                              icon: Icons.verified_user_outlined,
+                              label: strings.accountStatus,
+                              value: strings.active,
+                              valueColor: const Color(0xff1eb978),
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              _InfoRow(icon: Icons.person_outline, label: strings.username, value: 'andi.pratama'),
-              const Divider(),
-              _InfoRow(icon: Icons.email_outlined, label: strings.email, value: 'andi.pratama@apotekcare.com'),
-              const Divider(),
-              _InfoRow(icon: Icons.phone_outlined, label: strings.phone, value: '081234567890'),
-              const Divider(),
-              _InfoRow(icon: Icons.calendar_today_outlined, label: strings.joined, value: '15 Januari 2024'),
-              const Divider(),
-              _InfoRow(icon: Icons.verified_user_outlined, label: strings.accountStatus, value: strings.active, valueColor: const Color(0xff1eb978)),
+                      ),
                     ],
                   ),
                 ),
@@ -2073,7 +2549,13 @@ class _ProfileTab extends StatelessWidget {
                       const SizedBox(height: 10),
                       _SessionInfoRow(label: strings.activeShift, value: strings.morningShift),
                       const SizedBox(height: 6),
-                      _SessionInfoRow(label: strings.loginAs, value: strings.employee, valueColor: const Color(0xff1eb978)),
+                      Obx(
+                        () => _SessionInfoRow(
+                          label: strings.loginAs,
+                          value: controller.role.value,
+                          valueColor: const Color(0xff1eb978),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -2083,7 +2565,7 @@ class _ProfileTab extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () => Get.offAllNamed(Routes.login),
+                    onPressed: controller.logout,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xffde4242),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -2441,7 +2923,7 @@ class _MoreTab extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: () => Get.offAllNamed(Routes.login),
+                    onPressed: controller.logout,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xffe07b7b)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -2457,7 +2939,7 @@ class _MoreTab extends StatelessWidget {
                 const SizedBox(height: 14),
                 const Center(
                   child: Text(
-                    'ApotekCare v1.0.0',
+                    'Apotek Aafiyah v1.0.0',
                     style: TextStyle(color: Colors.black54),
                   ),
                 ),

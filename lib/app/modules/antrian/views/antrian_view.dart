@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../../../routes/app_pages.dart';
 import '../controllers/antrian_controller.dart';
@@ -10,37 +11,9 @@ class AntrianView extends GetView<AntrianController> {
   @override
   Widget build(BuildContext context) {
     const accent = Color(0xff06b47c);
-    final filters = ['Semua', 'Menunggu', 'Siap Bayar'];
-
-    final orders = [
-      {
-        'id': 'TRX-2024-002',
-        'name': 'Bapak Ahmad',
-        'time': '14:45',
-        'status': 'Siap Dibayar',
-        'statusColor': const Color(0xff2a7ae4),
-        'label': 'Konsultasi',
-        'items': [
-          {'name': 'Amoxicillin 500mg', 'qty': '1 strip'},
-        ],
-        'total': 'Rp 15.000',
-        'payable': true,
-      },
-      {
-        'id': 'TRX-2024-001',
-        'name': 'Ibu Siti',
-        'time': '14:30',
-        'status': 'Menunggu Diambil',
-        'statusColor': const Color(0xffe4aa32),
-        'label': 'Umum',
-        'items': [
-          {'name': 'Paracetamol 500mg', 'qty': '2 strip'},
-          {'name': 'Vitamin C 500mg', 'qty': '1 botol'},
-        ],
-        'total': 'Rp 0',
-        'payable': false,
-      },
-    ];
+    final filters = ['Semua', 'Selesai'];
+    final currency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
+    final timeFmt = DateFormat('HH:mm');
 
     return Scaffold(
       backgroundColor: const Color(0xfff6f7fb),
@@ -60,10 +33,11 @@ class AntrianView extends GetView<AntrianController> {
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: const Color(0xffe1e7ef)),
                     ),
-                    child: const TextField(
-                      decoration: InputDecoration(
+                    child: TextField(
+                      onChanged: controller.setSearch,
+                      decoration: const InputDecoration(
                         icon: Icon(Icons.search, color: Colors.grey),
-                        hintText: 'Cari nomor transaksi atau nama pasien',
+                        hintText: 'Cari nomor transaksi, kasir, atau nama obat',
                         border: InputBorder.none,
                       ),
                     ),
@@ -73,11 +47,7 @@ class AntrianView extends GetView<AntrianController> {
                     () => Row(
                       children: filters.map((f) {
                         final selected = controller.selectedFilter.value == f;
-                        final chipColor = f == 'Semua'
-                            ? accent
-                            : f == 'Menunggu'
-                                ? const Color(0xffe4aa32)
-                                : const Color(0xff2a7ae4);
+                        final chipColor = f == 'Semua' ? accent : const Color(0xff06b47c);
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: ChoiceChip(
@@ -104,25 +74,36 @@ class AntrianView extends GetView<AntrianController> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
-                itemCount: orders.length,
-                itemBuilder: (_, i) {
-                  final o = orders[i];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _OrderCard(
-                      accent: accent,
-                      id: o['id'] as String,
-                      name: o['name'] as String,
-                      time: o['time'] as String,
-                      status: o['status'] as String,
-                      statusColor: o['statusColor'] as Color,
-                      label: o['label'] as String,
-                      items: (o['items'] as List).cast<Map<String, String>>(),
-                      total: o['total'] as String,
-                      payable: o['payable'] as bool,
-                    ),
+              child: Obx(
+                () {
+                  if (controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final items = controller.filteredSales;
+                  if (items.isEmpty) {
+                    return const Center(child: Text('Belum ada transaksi.'));
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
+                    itemCount: items.length,
+                    itemBuilder: (_, i) {
+                      final sale = items[i];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _OrderCard(
+                          accent: accent,
+                          id: sale.id,
+                          name: 'Kasir: ${sale.cashierName}',
+                          time: timeFmt.format(sale.createdAt),
+                          status: 'Selesai',
+                          statusColor: const Color(0xff06b47c),
+                          label: sale.paymentMethod.toUpperCase(),
+                          items: sale.items,
+                          total: currency.format(sale.totalAmount),
+                          payable: false,
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -212,7 +193,7 @@ class _OrderCard extends StatelessWidget {
   final String status;
   final Color statusColor;
   final String label;
-  final List<Map<String, String>> items;
+  final List<SaleItemEntry> items;
   final String total;
   final bool payable;
 
@@ -283,8 +264,8 @@ class _OrderCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(e['name'] ?? '', style: const TextStyle(color: Colors.black87)),
-                    Text(e['qty'] ?? '', style: const TextStyle(color: Colors.black54)),
+                    Text(e.name, style: const TextStyle(color: Colors.black87)),
+                    Text('${e.qty}x', style: const TextStyle(color: Colors.black54)),
                   ],
                 ),
               )),

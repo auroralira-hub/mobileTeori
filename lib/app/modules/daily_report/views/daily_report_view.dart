@@ -168,7 +168,7 @@ class _Header extends StatelessWidget {
                     ),
                     SizedBox(height: 2),
                     Text(
-                      'Ringkasan aktivitas apotek',
+                      'Ringkasan aktivitas Apotek Aafiyah',
                       style: TextStyle(color: Colors.white70),
                     ),
                   ],

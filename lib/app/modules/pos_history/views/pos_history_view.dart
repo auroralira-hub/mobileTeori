@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/lang.dart';
 import '../../../routes/app_pages.dart';
@@ -12,13 +13,15 @@ class PosHistoryView extends GetView<PosHistoryController> {
   Widget build(BuildContext context) {
     const accent = Color(0xff2a7ae4);
     final filters = ['Semua', 'Hari Ini', '7 Hari', '30 Hari'];
+    final currency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
+    final timeFmt = DateFormat('HH:mm');
 
     return Scaffold(
       backgroundColor: const Color(0xfff6f7fb),
       body: SafeArea(
         child: Column(
           children: [
-            _Header(onBack: Get.back, accent: accent),
+            _Header(onBack: Get.back, accent: accent, controller: controller, currency: currency),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
               child: Column(
@@ -40,7 +43,7 @@ class PosHistoryView extends GetView<PosHistoryController> {
                               const SizedBox(width: 6),
                               Expanded(
                                 child: TextField(
-                                  onChanged: (v) => controller.search.value = v,
+                                  onChanged: controller.setSearch,
                                   decoration: const InputDecoration(
                                     hintText: 'Cari no. transaksi, kasir, produk',
                                     border: InputBorder.none,
@@ -96,17 +99,48 @@ class PosHistoryView extends GetView<PosHistoryController> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.receipt_long_outlined, size: 58, color: Colors.grey),
-                    SizedBox(height: 10),
-                    Text('Tidak ada transaksi', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w700)),
-                    SizedBox(height: 4),
-                    Text('Belum ada transaksi yang tercatat', style: TextStyle(color: Colors.black45)),
-                  ],
-                ),
+              child: Obx(
+                () {
+                  if (controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final items = controller.filteredSales;
+                  if (items.isEmpty) {
+                    return const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.receipt_long_outlined, size: 58, color: Colors.grey),
+                          SizedBox(height: 10),
+                          Text('Tidak ada transaksi', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w700)),
+                          SizedBox(height: 4),
+                          Text('Belum ada transaksi yang tercatat', style: TextStyle(color: Colors.black45)),
+                        ],
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
+                    itemCount: items.length,
+                    itemBuilder: (_, i) {
+                      final sale = items[i];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _OrderCard(
+                          accent: accent,
+                          id: sale.id,
+                          name: 'Kasir: ${sale.cashierName}',
+                          time: timeFmt.format(sale.createdAt),
+                          status: 'Selesai',
+                          statusColor: const Color(0xff06b47c),
+                          label: sale.paymentMethod.toUpperCase(),
+                          items: sale.items,
+                          total: currency.format(sale.totalAmount),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],
@@ -146,8 +180,15 @@ class PosHistoryView extends GetView<PosHistoryController> {
 class _Header extends StatelessWidget {
   final VoidCallback onBack;
   final Color accent;
+  final PosHistoryController controller;
+  final NumberFormat currency;
 
-  const _Header({required this.onBack, required this.accent});
+  const _Header({
+    required this.onBack,
+    required this.accent,
+    required this.controller,
+    required this.currency,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -182,14 +223,16 @@ class _Header extends StatelessWidget {
             style: TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: const [
-              _StatCard(title: 'Total Transaksi', value: '0'),
-              SizedBox(width: 10),
-              _StatCard(title: 'Total Item', value: '0'),
-              SizedBox(width: 10),
-              _StatCard(title: 'Total Omzet', value: 'Rp 0'),
-            ],
+          Obx(
+            () => Row(
+              children: [
+                _StatCard(title: 'Total Transaksi', value: '${controller.totalTransactions}'),
+                const SizedBox(width: 10),
+                _StatCard(title: 'Total Item', value: '${controller.totalItems}'),
+                const SizedBox(width: 10),
+                _StatCard(title: 'Total Omzet', value: currency.format(controller.totalRevenue)),
+              ],
+            ),
           ),
         ],
       ),
@@ -230,6 +273,127 @@ class _StatCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _OrderCard extends StatelessWidget {
+  final Color accent;
+  final String id;
+  final String name;
+  final String time;
+  final String status;
+  final Color statusColor;
+  final String label;
+  final List<SaleItemEntry> items;
+  final String total;
+
+  const _OrderCard({
+    required this.accent,
+    required this.id,
+    required this.name,
+    required this.time,
+    required this.status,
+    required this.statusColor,
+    required this.label,
+    required this.items,
+    required this.total,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: const Color(0xffe7f7ef),
+                child: Icon(Icons.receipt_long, color: accent),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(id, style: const TextStyle(fontWeight: FontWeight.w800)),
+                    Text(name, style: const TextStyle(color: Colors.black87)),
+                  ],
+                ),
+              ),
+              Text(time, style: const TextStyle(color: Colors.black54)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _Chip(text: status, color: statusColor.withValues(alpha: 0.12), textColor: statusColor),
+              const SizedBox(width: 8),
+              _Chip(text: label, color: const Color(0xffe8f0ff), textColor: const Color(0xff2a7ae4)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text('${items.length} item obat', style: const TextStyle(color: Colors.black87)),
+          const SizedBox(height: 6),
+          ...items.map((e) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(e.name, style: const TextStyle(color: Colors.black87)),
+                    Text('${e.qty}x', style: const TextStyle(color: Colors.black54)),
+                  ],
+                ),
+              )),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Total', style: TextStyle(color: Colors.black54)),
+                  const SizedBox(height: 4),
+                  Text(total, style: const TextStyle(color: Color(0xff06b47c), fontWeight: FontWeight.w800)),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  final String text;
+  final Color color;
+  final Color textColor;
+
+  const _Chip({required this.text, required this.color, required this.textColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(18)),
+      child: Text(
+        text,
+        style: TextStyle(color: textColor, fontWeight: FontWeight.w700, fontSize: 12),
       ),
     );
   }

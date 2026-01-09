@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/lang.dart';
 import '../../../routes/app_pages.dart';
@@ -14,152 +15,123 @@ class _RakViewState extends State<RakView> {
   int selectedRak = 0;
   int selectedLoker = 0;
   final rakLabels = ['Rak A', 'Rak B', 'Rak C', 'Rak D'];
+  final SupabaseClient _client = Supabase.instance.client;
+  late List<List<Map<String, dynamic>>> rackData;
+  bool isLoading = true;
+  String? loadError;
 
-  final List<List<Map<String, dynamic>>> rackData = [
-    List.generate(
-      12,
-      (i) => {
-        'name': [
-          'Paracetamol 500 mg',
-          'Amoxicillin 500 mg',
-          'Ibuprofen 400 mg',
-          'Cetirizine 10 mg',
-          'OBH Combi Syrup',
-          'Vitamin C 1000 mg',
-          'Omeprazole 20 mg',
-          'Ranitidine 150 mg',
-          'Azithromycin 500 mg',
-          'Chlorpheniramine 4 mg',
-          'Antasida DOEN',
-          'Loratadine 10 mg',
-        ][i],
-        'stock': [450, 320, 280, 320, 150, 210, 180, 140, 90, 60, 130, 170][i],
-        'min': [100, 120, 150, 80, 60, 90, 60, 80, 50, 40, 70, 60][i],
-        'expiry': [
-          '15 Mar 2025',
-          '10 Jan 2025',
-          '08 Des 2024',
-          '28 Jan 2025',
-          '05 Jun 2025',
-          '22 Feb 2025',
-          '18 Apr 2025',
-          '12 Mei 2025',
-          '30 Des 2024',
-          '25 Jan 2025',
-          '02 Feb 2025',
-          '14 Mar 2025',
-        ][i],
-      },
-    ),
-    List.generate(
-      12,
-      (i) => {
-        'name': [
-          'Metformin 500 mg',
-          'Simvastatin 20 mg',
-          'Amlodipine 10 mg',
-          'Ciprofloxacin 500 mg',
-          'Prednisone 5 mg',
-          'Fluconazole 150 mg',
-          'Acetylcysteine 600 mg',
-          'Mefenamic Acid 500 mg',
-          'Clarithromycin 500 mg',
-          'Dexamethasone 0.5 mg',
-          'Lisinopril 10 mg',
-          'Hydroxyzine 25 mg',
-        ][i],
-        'stock': [110, 95, 160, 125, 70, 90, 140, 105, 80, 65, 120, 150][i],
-        'min': [60, 70, 80, 90, 40, 50, 70, 60, 50, 40, 60, 80][i],
-        'expiry': [
-          '12 Feb 2025',
-          '05 Mar 2025',
-          '22 Jan 2025',
-          '15 Feb 2025',
-          '08 Mar 2025',
-          '19 Apr 2025',
-          '10 Mei 2025',
-          '02 Mar 2025',
-          '25 Jan 2025',
-          '18 Feb 2025',
-          '30 Apr 2025',
-          '06 Mei 2025',
-        ][i],
-      },
-    ),
-    List.generate(
-      12,
-      (i) => {
-        'name': [
-          'Warfarin 5 mg',
-          'Clopidogrel 75 mg',
-          'Allopurinol 300 mg',
-          'Sitagliptin 50 mg',
-          'Azathioprine 50 mg',
-          'Levothyroxine 50 mcg',
-          'Bisoprolol 5 mg',
-          'Spironolactone 25 mg',
-          'Atenolol 50 mg',
-          'Diazepam 5 mg',
-          'Alprazolam 0.5 mg',
-          'Domperidone 10 mg',
-        ][i],
-        'stock': [90, 130, 140, 70, 55, 200, 180, 95, 125, 60, 75, 165][i],
-        'min': [50, 70, 80, 40, 30, 80, 70, 50, 60, 30, 30, 80][i],
-        'expiry': [
-          '11 Jan 2025',
-          '20 Feb 2025',
-          '08 Mar 2025',
-          '17 Jan 2025',
-          '28 Feb 2025',
-          '09 Apr 2025',
-          '21 Mei 2025',
-          '13 Mar 2025',
-          '05 Apr 2025',
-          '19 Jan 2025',
-          '15 Feb 2025',
-          '07 Mei 2025',
-        ][i],
-      },
-    ),
-    List.generate(
-      12,
-      (i) => {
-        'name': [
-          'Salbutamol Inhaler',
-          'Budesonide 0.5 mg',
-          'Montelukast 10 mg',
-          'Cetirizine Syrup',
-          'Chlorhexidine 0.2%',
-          'Povidone Iodine',
-          'Erythromycin 500 mg',
-          'Lincomycin 500 mg',
-          'Amphotericin B',
-          'Cefixime 200 mg',
-          'Levofloxacin 500 mg',
-          'Oseltamivir 75 mg',
-        ][i],
-        'stock': [40, 85, 95, 70, 60, 120, 80, 75, 30, 140, 150, 65][i],
-        'min': [30, 60, 70, 50, 40, 60, 50, 50, 20, 90, 100, 50][i],
-        'expiry': [
-          '03 Mar 2025',
-          '25 Feb 2025',
-          '12 Apr 2025',
-          '28 Jan 2025',
-          '14 Feb 2025',
-          '30 Apr 2025',
-          '08 Mar 2025',
-          '19 Mar 2025',
-          '05 Jan 2025',
-          '22 Mei 2025',
-          '06 Jun 2025',
-          '18 Jan 2025',
-        ][i],
-      },
-    ),
-  ];
+  Map<String, dynamic> get currentLocker => rackData[selectedRak][selectedLoker];
 
-  Map<String, dynamic> get currentLocker =>
-      rackData[selectedRak][selectedLoker];
+  @override
+  void initState() {
+    super.initState();
+    rackData = List.generate(4, (_) => List.generate(12, (_) => _emptyItem()));
+    _fetchRackData();
+  }
+
+  Map<String, dynamic> _emptyItem() {
+    return {
+      'id': null,
+      'name': 'Kosong',
+      'stock': 0,
+      'min': 0,
+      'expiry': '-',
+    };
+  }
+
+  void _fetchRackData() async {
+    setState(() {
+      isLoading = true;
+      loadError = null;
+    });
+    try {
+      final data = await _client.from('medicines').select('id, name, rack_code, stock, expiry_date');
+      final next = List.generate(4, (_) => List.generate(12, (_) => _emptyItem()));
+      for (final row in (data as List)) {
+        final rackCode = (row['rack_code'] ?? '').toString().trim().toUpperCase();
+        if (rackCode.isEmpty) {
+          continue;
+        }
+        final parsed = _parseRackCode(rackCode);
+        if (parsed == null) {
+          continue;
+        }
+        final name = (row['name'] ?? 'Kosong').toString();
+        final stock = row['stock'] is int ? row['stock'] as int : int.tryParse('${row['stock']}') ?? 0;
+        final expiryRaw = row['expiry_date'];
+        final expiry = _formatExpiry(expiryRaw);
+        next[parsed.item1][parsed.item2] = {
+          'id': row['id'],
+          'name': name,
+          'stock': stock,
+          'min': 0,
+          'expiry': expiry,
+        };
+      }
+      setState(() {
+        rackData = next;
+        isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        loadError = error.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  _RackSlot? _parseRackCode(String rackCode) {
+    if (rackCode.isEmpty) return null;
+    final letter = rackCode.substring(0, 1);
+    final numberPart = rackCode.substring(1);
+    final rackIndex = ['A', 'B', 'C', 'D'].indexOf(letter);
+    final slotNumber = int.tryParse(numberPart) ?? 0;
+    if (rackIndex < 0 || slotNumber < 1 || slotNumber > 12) {
+      return null;
+    }
+    return _RackSlot(rackIndex, slotNumber - 1);
+  }
+
+  String _formatExpiry(Object? raw) {
+    if (raw == null) return '-';
+    if (raw is DateTime) {
+      return raw.toIso8601String().split('T').first;
+    }
+    final text = raw.toString();
+    if (text.contains('T')) {
+      return text.split('T').first;
+    }
+    return text;
+  }
+
+  Future<void> _updateExpiryDate() async {
+    final item = currentLocker;
+    final id = item['id'] as String?;
+    if (id == null) {
+      Get.snackbar('Tidak bisa diubah', 'Loker ini kosong.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null) return;
+    try {
+      final dateValue = picked.toIso8601String().split('T').first;
+      await _client.from('medicines').update({'expiry_date': dateValue}).eq('id', id);
+      setState(() {
+        rackData[selectedRak][selectedLoker] = {
+          ...item,
+          'expiry': dateValue,
+        };
+      });
+      Get.snackbar('Sukses', 'Tanggal kadaluarsa diperbarui.', snackPosition: SnackPosition.BOTTOM);
+    } catch (error) {
+      Get.snackbar('Gagal', error.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,66 +192,71 @@ class _RakViewState extends State<RakView> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 3,
-                                    childAspectRatio: 1,
-                                    crossAxisSpacing: 10,
-                                    mainAxisSpacing: 10,
-                                  ),
-                              itemCount: 12,
-                              itemBuilder: (context, idx) {
-                                final isSelected = selectedLoker == idx;
-                                return InkWell(
-                                  borderRadius: BorderRadius.circular(14),
-                                  onTap: () =>
-                                      setState(() => selectedLoker = idx),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? Colors.green[100]
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? Colors.green
-                                            : Colors.teal[100]!,
-                                        width: isSelected ? 2 : 1.5,
-                                      ),
+                            if (isLoading)
+                              const Center(child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator()))
+                            else if (loadError != null)
+                              Text(loadError!, style: const TextStyle(color: Colors.red))
+                            else
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      childAspectRatio: 1,
+                                      crossAxisSpacing: 10,
+                                      mainAxisSpacing: 10,
                                     ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            (idx + 1).toString().padLeft(
-                                              2,
-                                              '0',
+                                itemCount: 12,
+                                itemBuilder: (context, idx) {
+                                  final isSelected = selectedLoker == idx;
+                                  return InkWell(
+                                    borderRadius: BorderRadius.circular(14),
+                                    onTap: () =>
+                                        setState(() => selectedLoker = idx),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? Colors.green[100]
+                                            : Colors.white,
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? Colors.green
+                                              : Colors.teal[100]!,
+                                          width: isSelected ? 2 : 1.5,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              (idx + 1).toString().padLeft(
+                                                2,
+                                                '0',
+                                              ),
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: isSelected
+                                                    ? Colors.green
+                                                    : Colors.teal[800],
+                                              ),
                                             ),
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
+                                            const SizedBox(height: 6),
+                                            Icon(
+                                              Icons.inventory_2,
                                               color: isSelected
                                                   ? Colors.green
-                                                  : Colors.teal[800],
+                                                  : Colors.teal[400],
                                             ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Icon(
-                                            Icons.inventory_2,
-                                            color: isSelected
-                                                ? Colors.green
-                                                : Colors.teal[400],
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
+                                  );
+                                },
+                              ),
                           ],
                         ),
                       ),
@@ -289,6 +266,7 @@ class _RakViewState extends State<RakView> {
                       rackName: rakLabels[selectedRak],
                       lokerNumber: selectedLoker + 1,
                       item: currentLocker,
+                      onUpdateExpiry: _updateExpiryDate,
                     ),
                   ],
                 ),
@@ -414,10 +392,12 @@ class _LockerDetail extends StatelessWidget {
   final String rackName;
   final int lokerNumber;
   final Map<String, dynamic> item;
+  final VoidCallback onUpdateExpiry;
   const _LockerDetail({
     required this.rackName,
     required this.lokerNumber,
     required this.item,
+    required this.onUpdateExpiry,
   });
 
   @override
@@ -508,15 +488,15 @@ class _LockerDetail extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                ),
-                onPressed: () {},
-                child: const Text('Atur Ulang Obat'),
+                onPressed: onUpdateExpiry,
+                child: const Text('Ubah Kadaluarsa'),
               ),
             ),
           ],
@@ -524,4 +504,10 @@ class _LockerDetail extends StatelessWidget {
       ),
     );
   }
+}
+
+class _RackSlot {
+  final int item1;
+  final int item2;
+  const _RackSlot(this.item1, this.item2);
 }

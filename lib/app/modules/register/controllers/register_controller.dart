@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../services/auth_service.dart';
 import '../../../routes/app_pages.dart';
 
@@ -68,29 +69,45 @@ class RegisterController extends GetxController {
       return;
     }
 
+    final email = emailController.text.trim();
+    if (!GetUtils.isEmail(email)) {
+      Get.snackbar(
+        'Email tidak valid',
+        'Gunakan email yang benar untuk registrasi.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
     isSubmitting.value = true;
-    await Future.delayed(const Duration(seconds: 2));
-    isSubmitting.value = false;
-
-    authService.saveUser(
-      username: usernameController.text.trim(),
-      password: passwordController.text,
-      role: selectedRole.value.toLowerCase(),
-    );
-
-    Get.snackbar(
-      'Registrasi Berhasil',
-      'Akun Anda siap digunakan sebagai ${selectedRole.value}.',
-      snackPosition: SnackPosition.BOTTOM,
-    );
-
-    Get.offAllNamed(
-      Routes.login,
-      arguments: {
-        'username': usernameController.text.trim(),
-        'role': selectedRole.value,
-      },
-    );
+    try {
+      await authService.signUp(
+        email: email,
+        password: passwordController.text,
+        username: usernameController.text.trim(),
+        role: selectedRole.value,
+      );
+      Get.snackbar(
+        'Registrasi Berhasil',
+        'Akun Anda siap digunakan sebagai ${selectedRole.value}.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      Get.offAllNamed(
+        Routes.login,
+        arguments: {
+          'username': email,
+          'role': selectedRole.value,
+        },
+      );
+    } catch (error) {
+      Get.snackbar(
+        'Registrasi Gagal',
+        _readableError(error),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isSubmitting.value = false;
+    }
   }
 
   @override
@@ -108,5 +125,12 @@ class RegisterController extends GetxController {
     experienceController.dispose();
     workplaceController.dispose();
     super.onClose();
+  }
+
+  String _readableError(Object error) {
+    if (error is AuthException) {
+      return error.message;
+    }
+    return 'Registrasi gagal. Silakan coba lagi.';
   }
 }

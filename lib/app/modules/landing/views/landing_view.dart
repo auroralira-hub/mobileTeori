@@ -34,7 +34,7 @@ class LandingView extends GetView<LandingController> {
                     const _HeroLogo(),
                     const SizedBox(height: 24),
                     Text(
-                      'ApotekCare',
+                      'Apotek Aafiyah',
                       style: theme.textTheme.headlineSmall?.copyWith(
                         color: const Color(0xff00a86b),
                         fontWeight: FontWeight.w700,
@@ -42,7 +42,7 @@ class LandingView extends GetView<LandingController> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Sistem Manajemen Apotek',
+                      'Sistem Manajemen Apotek Aafiyah',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: Colors.grey[600],
@@ -80,7 +80,7 @@ class LandingView extends GetView<LandingController> {
                     const SizedBox(height: 16),
                     _RoleCard(
                       title: 'Apoteker',
-                      subtitle: 'Kelola sistem apotek',
+                      subtitle: 'Kelola sistem Apotek Aafiyah',
                       icon: Icons.local_pharmacy_outlined,
                       iconBackground: const Color(0xffedf1ff),
                       iconColor: const Color(0xff5676ff),
@@ -91,7 +91,7 @@ class LandingView extends GetView<LandingController> {
                     ),
                     const SizedBox(height: 40),
                     Text(
-                      '(c) 2025 ApotekCare. All rights reserved.',
+                      '(c) 2025 Apotek Aafiyah. All rights reserved.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: Colors.grey[500],

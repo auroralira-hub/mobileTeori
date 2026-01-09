@@ -85,7 +85,7 @@ class LoginView extends GetView<LoginController> {
                           Column(
                             children: [
                               Text(
-                                'Apotek Care',
+                                'Apotek Aafiyah',
                                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                       color: accent,
                                       fontWeight: FontWeight.w800,
@@ -94,7 +94,7 @@ class LoginView extends GetView<LoginController> {
                               ),
                               const SizedBox(height: 4),
                               const Text(
-                                'Sistem Internal Manajemen Apotek',
+                                'Sistem Internal Manajemen Apotek Aafiyah',
                                 style: TextStyle(color: Colors.black54),
                               ),
                             ],
@@ -116,71 +116,58 @@ class LoginView extends GetView<LoginController> {
                                 ),
                                 const SizedBox(height: 10),
                                 Obx(() {
-                                  final locked = controller.lockedRole.value;
                                   return Row(
                                     children: roles.map((r) {
-                                      final isLockedOther = locked != null && locked != r.toLowerCase();
                                       final selected = controller.selectedRole.value == r;
-                                      final bg = isLockedOther
-                                          ? Colors.grey[200]
-                                          : (selected ? const Color(0xffe8fff5) : Colors.white);
-                                      final borderColor = isLockedOther
-                                          ? const Color(0xffdcdcdc)
-                                          : (selected ? accent : const Color(0xffe4ecf5));
-                                      final iconColor = isLockedOther
-                                          ? Colors.grey
-                                          : (selected ? accent : Colors.grey);
-                                      final labelColor = isLockedOther
-                                          ? Colors.black38
-                                          : (selected ? accent : Colors.black87);
-                                      final subColor = isLockedOther ? Colors.black26 : Colors.grey;
+                                      final bg = selected ? const Color(0xffe8fff5) : Colors.white;
+                                      final borderColor = selected ? accent : const Color(0xffe4ecf5);
+                                      final iconColor = selected ? accent : Colors.grey;
+                                      final labelColor = selected ? accent : Colors.black87;
+                                      final subColor = Colors.grey;
 
                                       return Expanded(
                                         child: Padding(
                                           padding: const EdgeInsets.only(right: 10),
                                           child: GestureDetector(
-                                            onTap: isLockedOther ? null : () => controller.selectRole(r),
-                                            child: Opacity(
-                                              opacity: isLockedOther ? 0.6 : 1,
-                                              child: Container(
-                                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                                decoration: BoxDecoration(
-                                                  color: bg,
-                                                  borderRadius: BorderRadius.circular(12),
-                                                  border: Border.all(
-                                                    color: borderColor,
-                                                    width: selected ? 1.6 : 1,
+                                            onTap: () => controller.selectRole(r),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(vertical: 14),
+                                              decoration: BoxDecoration(
+                                                color: bg,
+                                                borderRadius: BorderRadius.circular(12),
+                                                border: Border.all(
+                                                  color: borderColor,
+                                                  width: selected ? 1.6 : 1,
+                                                ),
+                                              ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    r == 'Apoteker'
+                                                        ? Icons.local_hospital_outlined
+                                                        : Icons.inventory_2_outlined,
+                                                    color: iconColor,
                                                   ),
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      r == 'Apoteker'
-                                                          ? Icons.local_hospital_outlined
-                                                          : Icons.inventory_2_outlined,
-                                                      color: iconColor,
+                                                  const SizedBox(height: 6),
+                                                  Text(
+                                                    r,
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.w700,
+                                                      color: labelColor,
                                                     ),
-                                                    const SizedBox(height: 6),
-                                                    Text(
-                                                      r,
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight.w700,
-                                                        color: labelColor,
-                                                      ),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    r == 'Apoteker'
+                                                        ? 'Konsultasi & transaksi'
+                                                        : 'Ambil obat & stok',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: subColor,
                                                     ),
-                                                    const SizedBox(height: 2),
-                                                    Text(
-                                                      r == 'Apoteker'
-                                                          ? 'Konsultasi & transaksi'
-                                                          : 'Ambil obat & stok',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        color: subColor,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ),
@@ -193,7 +180,7 @@ class LoginView extends GetView<LoginController> {
                                 TextField(
                                   controller: controller.usernameController,
                                   decoration: fieldDecoration(
-                                    hint: 'Email atau username',
+                                    hint: 'Email',
                                     icon: Icons.mail_outline,
                                     outlined: true,
                                   ),
